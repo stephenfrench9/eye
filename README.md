@@ -84,19 +84,39 @@ Sadly, our model fails to achieve any predictive power.
 
 ## Model 8
 ### search
-We now attempt another search, except this time we set the architecture of the network with N=10 and f=10, as those numbers seem to have performed well in the model 7 search. We search over the paramters associated with the adam optimizer: alpha (learning rate) = [.01, .1, 1], beta1=[.8, .9], beta2=[.999], epsilon=[.1, 1].
+We set the architecture of the network with N=10 and f=10, and search over the paramters associated with the adam optimizer: alpha (learning rate) = [.01, .1, 1], beta1=[.8, .9], beta2=[.999], epsilon=[.1, 1].
 
 The results for learning rate = .01 are:
+
 <img src="/readmePics/model8Search/01-1.png" alt=".." width="350"/> <img src="/readmePics/model8Search/01-2.png" alt=".." width="350"/>
 <img src="/readmePics/model8Search/01-3.png" alt=".." width="350"/> <img src="/readmePics/model8Search/01-4.png" alt=".." width="350"/>
 
 The results for learning rate = .1 are:
+
 <img src="/readmePics/model8Search/1-1.png" alt=".." width="350"/> <img src="/readmePics/model8Search/1-2.png" alt=".." width="350"/>
 <img src="/readmePics/model8Search/1-3.png" alt=".." width="350"/> <img src="/readmePics/model8Search/1-4.png" alt=".." width="350"/>
 
 The results for learning rate = 1 are:
+
 <img src="/readmePics/model8Search/10-1.png" alt=".." width="350"/> <img src="/readmePics/model8Search/10-2.png" alt=".." width="350"/>
 <img src="/readmePics/model8Search/10-3.png" alt=".." width="350"/> <img src="/readmePics/model8Search/10-4.png" alt=".." width="350"/>
 
 ### train 
 
+[lr, beta1, beta2, epsilon]=[.1, .8, .999, 1] looks like a good model. Lets train it on 28000 images over 12 epochs.
+
+<img src="/readmePics/9-12model8epochs12.png" alt=".." width="350"/> <img src="/readmePics/9-12model8weights.png" alt=".." width="350"/>
+
+Sadly, this is a poor predictor. It achieves a recall of .72 and a precision of .81 (measured on the validation data, images 28000-31000) and it appears that its score on the validation loss never improves.
+
+But the search results were promising for these parameters. When we trained to four epochs during the search with these parameters, I saw the validation loss drop to 60% of its original value, but when I train just this model, I see a drop to only 90%. That doesn't make sense. The only difference is the numbr of images we are training on. So lets train to 12 epochs but just use 2800 images to train on, as in the training session. We should at least see the same drop in the validation loss. 
+
+<img src="/readmePics/9-16model8light12epochs.png" alt=".." width="350"/> <img src="/readmePics/9-16model8lightweights.png" alt=".." width="350"/>
+
+We see an improved validation loss, but the performance is poor. Recall is .62 and Precision is .87.
+
+## Model 9 - pretrained model
+
+### Search
+
+### Train
