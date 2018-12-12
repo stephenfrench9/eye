@@ -1,18 +1,69 @@
-import app
+import train
+
+import csv
 import numpy as np
 
+root = "./"
+
+
+def write_performance_single(model, cm, precision, recall, notes):
+    """
+    Save performance for a model predicting a single class.
+    :param model: the NAME of the model
+    :param cm: the confusion matrix
+    :param notes: typically the test data
+    :param recall: recall for this model on this single class prediction problem
+    :param precision:
+    """
+    destination = root + "models/" + model
+    with open(destination + "performance.csv", "w") as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=';',
+                                quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        header = ["           ", "actual 0", "actual 1"]
+        row1 = ["predicted 0", str(int(cm[0][0])), str(int(cm[0][1]))]
+        row2 = ["predicted 1", str(int(cm[1][0])), str(int(cm[1][1]))]
+        csv_writer.writerow(header)
+        csv_writer.writerow(row1)
+        csv_writer.writerow(row2)
+        csv_writer.writerow(precision)
+        csv_writer.writerow(recall)
+        csv_writer.writerow(notes)
+
+
+def write_performance_multi(model, precisions, recalls, notes):
+    """
+    Write to a csv the precisions and recalls for every class
+    :param model: the NAME of the model
+    :param precisions: all the precisions for all the difference classes
+    :param recalls: an array of recalls for each prediction class
+    :param notes: typically the test data
+    """
+    destination = root + "models/" + model
+    with open(destination + "performance.csv", "a") as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=';',
+                                quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        header = ["Class Number", "Precision", "Recall"]
+        csv_writer.writerow(header)
+
+        for i in range(28):
+            i = i + 1
+            csv_writer.writerow([str(i), precisions[i], recalls[i]])
+
+        csv_writer.writerow(notes)
+
+
 if __name__ == '__main__':
-    train_labels = app.data()
+    train_labels = train.data()
     modelOfInterest = "9-12-14-55/"
-    model = app.load_model(modelOfInterest)
+    model = train.load_model(modelOfInterest)
 
     # load test data
     batch_size = 30
     valid_l = 28000
     valid_h = 31000
-    test_generator = app.ImageSequence(train_labels=train_labels[valid_l:valid_h],
-                                       batch_size=batch_size,
-                                       start=valid_l)
+    test_generator = train.ImageSequence(train_labels=train_labels[valid_l:valid_h],
+                                         batch_size=batch_size,
+                                         start=valid_l)
     # initialize confusion matrix
     membership = 0  # column of predicted and actual results to examine
     a0 = np.zeros((2, 2))
@@ -41,4 +92,4 @@ if __name__ == '__main__':
     notes = ["file: train.csv", "range: " + str(valid_l) + ":" + str(valid_h), "batch size: " + str(batch_size)]
     precision = ["precision: ", str(precision)]
     recall = ["recall: ", str(recall)]
-    app.writePerformanceSingle(modelOfInterest, a0, precision, recall, notes)
+    write_performance_single(modelOfInterest, a0, precision, recall, notes)

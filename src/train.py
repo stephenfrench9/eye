@@ -1,7 +1,7 @@
 import csv
 import datetime
 import keras
-import keras.backend as K
+import keras.backend as k
 import tensorflow as tf
 import os
 import numpy as np
@@ -55,7 +55,7 @@ def data():
         27: "Rods & rings"
     }
 
-    reverse_train_labels = dict((v, k) for k, v in labels.items())
+    # reverse_train_labels = dict((v, k) for k, v in labels.items())
 
     for key in labels.keys():
         train_labels[labels[key]] = 0
@@ -115,10 +115,9 @@ class ImageSequence(Sequence):
         }
 
     def __len__(self):
-        return int(np.ceil((len(self.train_labels)) / float(self.batch_size)))-1
+        return int(np.ceil((len(self.train_labels)) / float(self.batch_size))) - 1
 
     def __getitem__(self, idx):
-        trials = len(self.train_labels)
         y = np.ones((self.batch_size, 1))
         x = np.ones((1, 512, 512, 4))
 
@@ -140,33 +139,24 @@ class ImageSequence(Sequence):
             y[i, :] = np.array(g[2:3])
 
         x = x[1:, :, :, :]
-        # plt.imsave("/ralston/pictures/blue.png", x[0][:, :, 0])
-        # plt.imsave("/ralston/pictures/red.png", x[0][:, :, 1])
-        # plt.imsave("/ralston/pictures/yellow.png", x[0][:, :, 2])
-        # plt.imsave("/ralston/pictures/green.png", x[0][:, :, 3])
-
-        # y = y.reshape(self.batch_size, 1)
         y = keras.utils.to_categorical(y, num_classes=2)
 
-        max = np.max(x)
-        max = abs(max)
-        x /= max
+        maximum = np.max(x)
+        maximum = abs(maximum)
+        x /= maximum
         mean = np.mean(x)
         x -= mean
-
-        o = x.shape
-        # print(o)
-        # x = x.reshape(o[0], o[1] * o[2] * o[3])
 
         return x, y
 
 
+# TODO: make models.py
+
 def model0(lrp, mp):
-    ax0range = 10;
-    ax1range = 100;
-    ax2range = 100;
-    ax3range = 4;
-    categories = 2;
+    ax1range = 100
+    ax2range = 100
+    ax3range = 4
+    categories = 2
 
     model = Sequential()
     model.add(Conv2D(100, (5, 5), activation='relu', input_shape=(ax1range, ax2range, ax3range)))
@@ -181,9 +171,7 @@ def model0(lrp, mp):
 
 
 def model1(lrp, mp):
-    ax0range = 10;
-    ax1range = 40000;
-    categories = 2;
+    categories = 2
 
     model = Sequential()
     model.add(Dense(2000, activation='relu', input_dim=40000))
@@ -194,9 +182,7 @@ def model1(lrp, mp):
 
 
 def model2(lrp, mp):
-    ax0range = 10;
-    ax1range = 40000;
-    categories = 2;
+    categories = 2
 
     model = Sequential()
     model.add(Dense(1000, activation='relu', input_dim=40000))
@@ -207,9 +193,7 @@ def model2(lrp, mp):
 
 
 def model3(lrp, mp):
-    ax0range = 10;
-    ax1range = 40000;
-    categories = 28;
+    categories = 28
 
     model = Sequential()
     model.add(Dense(1000, activation='relu', input_dim=40000))
@@ -222,11 +206,10 @@ def model3(lrp, mp):
 def model4(lrp, mp):
     """destined to fail - you cant predict rare categories with common ones.
     just produces straight zeros. only predicts zeros for everything"""
-    ax0range = 10;
-    ax1range = 100;
-    ax2range = 100;
-    ax3range = 4;
-    categories = 28;
+    ax1range = 100
+    ax2range = 100
+    ax3range = 4
+    categories = 28
 
     model = Sequential()
     model.add(Conv2D(2, (5, 5), activation='relu', input_shape=(ax1range, ax2range, ax3range)))
@@ -243,11 +226,10 @@ def model4(lrp, mp):
 
 def model5(lrp, mp, neurons):
     """only predict one category at a time"""
-    ax0range = 10;
-    ax1range = 100;
-    ax2range = 100;
-    ax3range = 4;
-    categories = 2;
+    ax1range = 100
+    ax2range = 100
+    ax3range = 4
+    categories = 2
 
     model = Sequential()
     model.add(Conv2D(2, (5, 5), activation='relu', input_shape=(ax1range, ax2range, ax3range)))
@@ -265,15 +247,15 @@ def model5(lrp, mp, neurons):
 
 def model6(lrp, mp, neurons, filters):
     """only predict one category at a time"""
-    ax1range = 512;
-    ax2range = 512;
-    ax3range = 4;
-    categories = 2;
+    ax1range = 512
+    ax2range = 512
+    ax3range = 4
+    categories = 2
 
     model = Sequential()
     model.add(Conv2D(filters, (5, 5), activation='relu', input_shape=(ax1range, ax2range, ax3range)))
     model.add(MaxPooling2D(pool_size=(10, 10)))
-    model.add(Conv2D(2*filters, (5, 5), activation='relu'))
+    model.add(Conv2D(2 * filters, (5, 5), activation='relu'))
     model.add(MaxPooling2D(pool_size=(10, 10)))
     # model.add(Conv2D(4, (5, 5), activation='relu'))
     # model.add(Dropout(0.25))
@@ -286,17 +268,18 @@ def model6(lrp, mp, neurons, filters):
     return model
 
 
-def model7(lr, mp, neurons, filters):
+def model7(neurons, filters):
     """only predict one category at a time"""
-    ax1range = 512;
-    ax2range = 512;
-    ax3range = 4;
-    categories = 2;
+    ax1range = 512
+    ax2range = 512
+    ax3range = 4
+    categories = 2
 
     model = Sequential()
-    model.add(Conv2D(filters, (5, 5), kernel_regularizer=l2(.01), activation='relu', input_shape=(ax1range, ax2range, ax3range)))
+    model.add(Conv2D(filters, (5, 5), kernel_regularizer=l2(.01), activation='relu',
+                     input_shape=(ax1range, ax2range, ax3range)))
     model.add(MaxPooling2D(pool_size=(10, 10)))
-    model.add(Conv2D(2*filters, (5, 5), kernel_regularizer=l2(.01), activation='relu'))
+    model.add(Conv2D(2 * filters, (5, 5), kernel_regularizer=l2(.01), activation='relu'))
     model.add(MaxPooling2D(pool_size=(10, 10)))
     # model.add(Conv2D(4, (5, 5), activation='relu'))
     # model.add(Dropout(0.25))
@@ -305,27 +288,26 @@ def model7(lr, mp, neurons, filters):
     model.add(Dense(neurons, kernel_regularizer=l2(.01), activation='relu'))
     model.add(Dense(categories, kernel_regularizer=l2(.01), activation='softmax'))
 
-    adam = Adam() # use all default values.
+    adam = Adam()  # use all default values.
     model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=[act_1, pred_1])
     return model
 
 
 def model8(lr, beta1, beta2, epsilon):
     """only predict one category at a time"""
-    neurons = 10;
-    filters = 10;
-    ax1range = 512;
-    ax2range = 512;
-    ax3range = 4;
-    categories = 2;
+    neurons = 10
+    filters = 10
+    ax1range = 512
+    ax2range = 512
+    ax3range = 4
+    categories = 2
 
     model = Sequential()
-    model.add(Conv2D(filters, (5, 5), kernel_regularizer=l2(.01), activation='relu', input_shape=(ax1range, ax2range, ax3range)))
+    model.add(Conv2D(filters, (5, 5), kernel_regularizer=l2(.01), activation='relu',
+                     input_shape=(ax1range, ax2range, ax3range)))
     model.add(MaxPooling2D(pool_size=(10, 10)))
-    model.add(Conv2D(2*filters, (5, 5), kernel_regularizer=l2(.01), activation='relu'))
+    model.add(Conv2D(2 * filters, (5, 5), kernel_regularizer=l2(.01), activation='relu'))
     model.add(MaxPooling2D(pool_size=(10, 10)))
-    # model.add(Conv2D(4, (5, 5), activation='relu'))
-    # model.add(Dropout(0.25))
     model.add(Flatten())
     # model.add(BatchNormalization(axis=1))
     model.add(Dense(neurons, kernel_regularizer=l2(.01), activation='relu'))
@@ -333,8 +315,10 @@ def model8(lr, beta1, beta2, epsilon):
 
     adam = Adam(lr=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon)
     model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=[act_1, pred_1])
-    return model
+    return model, "model8"
 
+
+# TODO: move to predict.py
 
 def load_model(model):
     """
@@ -349,68 +333,26 @@ def load_model(model):
     return model
 
 
-def writePerformanceSingle(model, cm, precision, recall, notes):
-    """
-    try out a model on some test data
-    :param model: the NAME of the model
-    :param cm: the confusion matrix
-    :param notes: typically the test data
-    """
-    destination = root + "models/" + model
-    with open(destination + "performance.csv", "w") as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=';',
-                                quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        header = ["           ", "actual 0", "actual 1"]
-        row1 = ["predicted 0", str(int(cm[0][0])), str(int(cm[0][1]))]
-        row2 = ["predicted 1", str(int(cm[1][0])), str(int(cm[1][1]))]
-        csvwriter.writerow(header)
-        csvwriter.writerow(row1)
-        csvwriter.writerow(row2)
-        csvwriter.writerow(precision)
-        csvwriter.writerow(recall)
-        csvwriter.writerow(notes)
-
-
-def write_performance_multi(model, precisions, recalls, notes):
-    """
-    Write to a csv the precisions and recalls for every class
-    :param model: the NAME of the model
-    :param precisions: all the precisions for all the difference classes
-    :param notes: typically the test data
-    """
-    destination = root + "models/" + model
-    with open(destination + "performance.csv", "a") as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=';',
-                                quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        header = ["Class Number", "Precision", "Recall"]
-        csvwriter.writerow(header)
-
-        for i in range(28):
-            i = i +1
-            csvwriter.writerow([str(i), precisions[i], recalls[i]])
-
-        csvwriter.writerow(notes)
-
-
-def pred_1(y_true, y_pred):
+def pred_1(y_true, y_prediction):
     """returns the average number per batch that are predicted to belong to the class
     in other words: tells you how many 1's were predicted. useful if you are afraid that
     your model is just predicting all ones.
     """
-    positives = K.sum(K.round(K.clip(y_pred[:, 1], 0, 1)))
+    positives = k.sum(k.round(k.clip(y_prediction[:, 1], 0, 1)))
     yy = tf.to_float(tf.size(y_true[:, 1]))
-    return positives/yy
+    return positives / yy
 
 
 def act_1(y_true, y_pred):
     """returns the avg freq of 1's
     """
-    possible_positives = K.sum(K.round(K.clip(y_true[:, 1], 0, 1)))
-    yy = tf.to_float(tf.size(y_true[:, 1]))
-    return possible_positives/yy
+    possible_positives = k.sum(k.round(k.clip(y_true[:, 1], 0, 1)))
+    # yy = tf.to_float(tf.size(y_true[:, 1]))
+    yy = tf.to_float(tf.size(y_pred[:, 1]))
+    return possible_positives / yy
 
-def precisionMetric(y_true, y_pred):
 
+def precision_metric(y_true, y_pred):
     print("type: " + str(type(y_true)))
     print("value " + str(y_true))
     print("now!!!")
@@ -425,47 +367,43 @@ def precisionMetric(y_true, y_pred):
         a0[prediction][actual] += 1
 
     # calculate performance metrics
-    class0 = a0[0][1] + a0[1][1]
-    recall = a0[1][1] / class0
+    # class0 = a0[0][1] + a0[1][1]
+    # recall = a0[1][1] / class0
     exclaim = a0[1][0] + a0[1][1]
     precision = a0[1][1] / exclaim
 
     return precision
 
 
+# TODO: move to search.py
+
 def search_parameters(lrs, beta1s, beta2s, epsilons, train_labels):
     now = datetime.datetime.now()
-    modelID = str(now.day) + "-" + str(now.hour) + "-" + str(now.minute) + "-" + str(now.second)
-    destination = root + "searches/" + modelID + "/"
+    model_id = str(now.day) + "-" + str(now.hour) + "-" + str(now.minute) + "-" + str(now.second)
+    destination = root + "searches/" + model_id + "/"
     if not os.path.isdir(destination):
         os.mkdir(destination)
-    csvfile = open(destination + 'eggs.csv', 'w', newline='')
+    csv_file = open(destination + 'eggs.csv', 'w', newline='')
     head = ['type', 'learning rate', 'momentum', 'neurons', 'filers', 'epoch 1', 'epoch 2', ' ... ']
-    spamwriter = csv.writer(csvfile, delimiter=';',
-                            quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    modelName = "model8"
-    train_l = 0;
-    train_h = 2800;
+    spam_writer = csv.writer(csv_file, delimiter=';',
+                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+    train_l = 0
+    train_h = 2800
     train_batch_size = 10
     train_batches = train_h / train_batch_size
-    # 0:28,000 and 28,000:31,000
-    valid_l = train_h;
-    valid_h = 3100;
+
+    valid_l = train_h
+    valid_h = 3100
     valid_batch_size = 5  # valid_batch_size =10 and valid_batches = 1 does not work ... cra
     valid_batches = (valid_h - valid_l) / valid_batch_size
-    spamwriter.writerow(["train_data",
-                         "train_labels: " + str(train_l) + ":" + str(train_h),
-                         "batch_size: " + str(train_batch_size),
-                         modelName])
-    spamwriter.writerow(["test_data",
-                         "test_labels: " + str(valid_l) + ":" + str(valid_h),
-                         "batch_size: " + str(valid_batch_size)])
-    spamwriter.writerow(head)
+    spam_writer.writerow(head)
     for lr in lrs:
         for beta1 in beta1s:
             for beta2 in beta2s:
                 for e in epsilons:
-                    model = model8(lr, beta1, beta2, e)
+                    # TODO: pass model function in as an argument
+                    model, model_name = model8(lr, beta1, beta2, e)
                     train_history = model.fit_generator(
                         generator=ImageSequence(train_labels[train_l:train_h],
                                                 batch_size=train_batch_size,
@@ -479,93 +417,102 @@ def search_parameters(lrs, beta1s, beta2s, epsilons, train_labels):
 
                     losses = train_history.history['loss']
                     val_losses = train_history.history['val_loss']
-                    pred_1 = train_history.history['pred_1']
-                    act_1 = train_history.history['act_1']
+                    predict_1 = train_history.history['pred_1']
+                    actually_1 = train_history.history['act_1']
 
-                    spamwriter.writerow(["train", lr, beta1, beta2, e] + losses)
-                    spamwriter.writerow(["valid", lr, beta1, beta2, e] + val_losses)
-                    spamwriter.writerow(["pred_1", lr, beta1, beta2, e] + pred_1)
-                    spamwriter.writerow(["act_1", lr, beta1, beta2, e] + act_1)
+                    spam_writer.writerow(["train", lr, beta1, beta2, e] + losses)
+                    spam_writer.writerow(["valid", lr, beta1, beta2, e] + val_losses)
+                    spam_writer.writerow(["pred_1", lr, beta1, beta2, e] + predict_1)
+                    spam_writer.writerow(["act_1", lr, beta1, beta2, e] + actually_1)
 
-    csvfile.close()
+    spam_writer.writerow(["train_data",
+                          "train_labels: " + str(train_l) + ":" + str(train_h),
+                          "batch_size: " + str(train_batch_size),
+                          model_name])
+    spam_writer.writerow(["test_data",
+                          "test_labels: " + str(valid_l) + ":" + str(valid_h),
+                          "batch_size: " + str(valid_batch_size)])
+
+    csv_file.close()
 
 
-def writeCsv(csvfile, train_history, lr, beta1, beta2, epsilon, train_l, train_h, train_batch_size, valid_l, valid_h, valid_batch_size,
-             modelName, notes):
-
+def write_csv(csv_file, train_history, lr, beta1, beta2, epsilon, train_l, train_h,
+              train_batch_size, valid_l, valid_h, valid_batch_size, model_name, notes):
     head = ['type', 'epoch 1', 'epoch 2', ' ... ']
-    spamwriter = csv.writer(csvfile, delimiter=';',
-                            quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    spam_writer = csv.writer(csv_file, delimiter=';',
+                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-    spamwriter.writerow(head)
+    spam_writer.writerow(head)
     losses = train_history.history['loss']
     val_losses = train_history.history['val_loss']
-    pred_1 = train_history.history['pred_1']
-    act_1 = train_history.history['act_1']
+    predict_1 = train_history.history['pred_1']
+    actually_1 = train_history.history['act_1']
 
-    spamwriter.writerow(["train"] + losses)
-    spamwriter.writerow(["valid"] + val_losses)
-    spamwriter.writerow(["pred_1"] + pred_1)
-    spamwriter.writerow(["act_1"] + act_1)
+    spam_writer.writerow(["train"] + losses)
+    spam_writer.writerow(["valid"] + val_losses)
+    spam_writer.writerow(["pred_1"] + predict_1)
+    spam_writer.writerow(["act_1"] + actually_1)
 
-    spamwriter.writerow([" ... "])
+    spam_writer.writerow([" ... "])
 
-    spamwriter.writerow(["training_header",
-                         "model name",
-                         "train_labels_low",
-                         "train_labels_high",
-                         "batch_size",
-                         "learning rate",
-                         "beta1",
-                         "beta2",
-                         "epsilon"])
-    spamwriter.writerow(["training_values",
-                         modelName,
-                         str(train_l),
-                         str(train_h),
-                         str(train_batch_size),
-                         str(lr),
-                         str(beta1),
-                         str(beta2),
-                         str(epsilon)])
-    spamwriter.writerow(["testing_header",
-                         "test_labels_low",
-                         "test_labels_high",
-                         "testing_batch_size"])
-    spamwriter.writerow(["testing_values",
-                         str(valid_l),
-                         str(valid_h),
-                         str(valid_batch_size)])
-    spamwriter.writerow(["notes"] + notes)
+    spam_writer.writerow(["training_header",
+                          "model name",
+                          "train_labels_low",
+                          "train_labels_high",
+                          "batch_size",
+                          "learning rate",
+                          "beta1",
+                          "beta2",
+                          "epsilon"])
+    spam_writer.writerow(["training_values",
+                          model_name,
+                          str(train_l),
+                          str(train_h),
+                          str(train_batch_size),
+                          str(lr),
+                          str(beta1),
+                          str(beta2),
+                          str(epsilon)])
+    spam_writer.writerow(["testing_header",
+                          "test_labels_low",
+                          "test_labels_high",
+                          "testing_batch_size"])
+    spam_writer.writerow(["testing_values",
+                          str(valid_l),
+                          str(valid_h),
+                          str(valid_batch_size)])
+    spam_writer.writerow(["notes"] + notes)
 
 
-if __name__ == "__main__":
+def main():
     # load the data
     train_labels = data()
 
+    # TODO: build a configuration file
     # train a model
-    modelName = "model8"
     lr = .1
     beta1 = .8
     beta2 = .999
     epsilon = 1
-    model = model8(lr, beta1, beta2, epsilon)
+    model, model_name = model8(lr, beta1, beta2, epsilon)
 
     print(model.summary())
 
-    train_l = 0; train_h = 2800;
+    train_l = 0
+    train_h = 20
     train_batch_size = 10
-    train_batches = train_h/train_batch_size
+    train_batches = train_h / train_batch_size
 
-    valid_l = train_h; valid_h = 3100;
-    valid_batch_size = 5 # valid_batch_size =10 and valid_batches = 1 does not work ... cra
-    valid_batches = (valid_h-valid_l)/valid_batch_size
+    valid_l = train_h
+    valid_h = 30
+    valid_batch_size = 5
+    valid_batches = (valid_h - valid_l) / valid_batch_size
 
     train_history = model.fit_generator(generator=ImageSequence(train_labels[train_l:train_h],
                                                                 batch_size=train_batch_size,
                                                                 start=train_l),
                                         steps_per_epoch=train_batches,
-                                        epochs=12,
+                                        epochs=1,
                                         validation_data=ImageSequence(train_labels[valid_l:valid_h],
                                                                       batch_size=valid_batch_size,
                                                                       start=valid_l),
@@ -573,15 +520,15 @@ if __name__ == "__main__":
 
     # save stuff
     now = datetime.datetime.now()
-    modelID = str(now.day) + "-" + str(now.hour) + "-" + str(now.minute) + "-" + str(now.second)
-    destination = root + "models/" + modelID + "/"
+    model_id = str(now.day) + "-" + str(now.hour) + "-" + str(now.minute)
+    destination = root + "models/" + model_id + "/"
     if not os.path.isdir(destination):
         os.mkdir(destination)
 
     notes = ["trained on my mac", "December 9 2018"]
-    with open(destination + 'eggs.csv', 'w', newline='') as csvfile:
-        writeCsv(csvfile, train_history, lr, beta1, beta2, epsilon, train_l, train_h, train_batch_size, valid_l, valid_h, valid_batch_size,
-                 modelName, notes)
+    with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
+        write_csv(csv_file, train_history, lr, beta1, beta2, epsilon, train_l, train_h, train_batch_size, valid_l,
+                  valid_h, valid_batch_size, model_name, notes)
 
     with open(destination + "model.json", "w") as json_file:
         json_model = model.to_json()
@@ -590,4 +537,5 @@ if __name__ == "__main__":
     model.save(destination + "weights")
 
 
-
+if __name__ == "__main__":
+    main()

@@ -1,15 +1,14 @@
-import app
+import train
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-
 if __name__ == "__main__":
     modelOfInterest = "9-12-14-55/"
     root = "./"
 
-    model = app.load_model(modelOfInterest)
+    model = train.load_model(modelOfInterest)
 
     print(model.summary())
 

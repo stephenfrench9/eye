@@ -4,11 +4,11 @@
 
 ## Model 5
 ### architecture
-input layer: dimension is 100x100x3
-first layer: convolution - 2 5x5 filters and a relu activation
-second layer: max pool - 7x7 pool size 
-third layer: flatten layer
-fourth layer: Dense layer, with 10 or 100 neurons and relu activation
+input layer: dimension is 100x100x3  
+first layer: convolution - 2 5x5 filters and a relu activation  
+second layer: max pool - 7x7 pool size  
+third layer: flatten layer  
+fourth layer: Dense layer, with 10 or 100 neurons and relu activation  
 fifth layer: Dense output layer, with softmax activation
 
 ### search
