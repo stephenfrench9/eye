@@ -538,4 +538,6 @@ def main():
 
 
 if __name__ == "__main__":
+    # TODO: add argparse for naming of the model, and to instruct users how to use train.py
+
     main()
