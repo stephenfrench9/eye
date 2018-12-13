@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     root = "./"
 
-    model_of_interest = "9-16-16-57/"
+    model_of_interest = "13-1-36/"
 
 
     print("graph eggs is running")
 
-    with open(root + "models/" + model_of_interest + "eggs.csv", 'r', newline='') as f:
+    with open(root + "models/" + model_of_interest + "training_session.csv", 'r', newline='') as f:
         rows = csv.reader(f, delimiter=';')
 
         for row in rows:

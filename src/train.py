@@ -8,10 +8,11 @@ import numpy as np
 import pandas as pd
 import warnings
 
+from classification_models import ResNet18
 from keras.regularizers import l2
-from keras.layers import Dense, Dropout, Flatten
+from keras.layers import Dense, Dropout, Flatten, AveragePooling2D
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras.models import Sequential, model_from_json
+from keras.models import Sequential, model_from_json, Model
 from keras.optimizers import SGD, Adam
 from keras.utils import Sequence
 from scipy.misc import imread
@@ -119,17 +120,17 @@ class ImageSequence(Sequence):
 
     def __getitem__(self, idx):
         y = np.ones((self.batch_size, 1))
-        x = np.ones((1, 512, 512, 4))
-
+        x = np.ones((1, 224, 224, 4))
+        dm = 512
         # y = to_cate
 
         # x = np.ones((1, 512, 512))
         for i in range(self.batch_size):
             sample = self.start + i + idx * self.batch_size
-            b = imread(self.base + self.train_labels.at[sample, 'Id'] + self.red).reshape((512, 512, 1))
-            r = imread(self.base + self.train_labels.at[sample, 'Id'] + self.blue).reshape((512, 512, 1))
-            ye = imread(self.base + self.train_labels.at[sample, 'Id'] + self.yellow).reshape((512, 512, 1))
-            g = imread(self.base + self.train_labels.at[sample, 'Id'] + self.green).reshape((512, 512, 1))
+            b = imread(self.base + self.train_labels.at[sample, 'Id'] + self.red).reshape((512, 512, 1))[0:224, 0:224, :]
+            r = imread(self.base + self.train_labels.at[sample, 'Id'] + self.blue).reshape((512, 512, 1))[0:224, 0:224, :]
+            ye = imread(self.base + self.train_labels.at[sample, 'Id'] + self.yellow).reshape((512, 512, 1))[0:224, 0:224, :]
+            g = imread(self.base + self.train_labels.at[sample, 'Id'] + self.green).reshape((512, 512, 1))[0:224, 0:224, :]
             im = np.append(b, r, axis=2)
             im = np.append(im, ye, axis=2)
             im = np.append(im, g, axis=2)
@@ -138,7 +139,7 @@ class ImageSequence(Sequence):
             g = self.train_labels.ix[sample]
             y[i, :] = np.array(g[2:3])
 
-        x = x[1:, :, :, :]
+        x = x[1:, :, :, 1:]
         y = keras.utils.to_categorical(y, num_classes=2)
 
         maximum = np.max(x)
@@ -318,6 +319,22 @@ def model8(lr, beta1, beta2, epsilon):
     return model, "model8"
 
 
+def model9():
+    n_classes = 2
+
+    base_model = ResNet18(input_shape=(224, 224, 3), weights='imagenet', include_top=False)
+    x = AveragePooling2D((7, 7))(base_model.output)
+    x = Dropout(0.3)(x)
+    x = Flatten()(x)
+    output = Dense(n_classes)(x)
+    model = Model(inputs=[base_model.input], outputs=[output])
+
+    adam = Adam()
+    # train
+    model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=[act_1, pred_1])
+    return model, "model9"
+
+
 # TODO: move to predict.py
 
 def load_model(model):
@@ -494,25 +511,26 @@ def main():
     beta1 = .8
     beta2 = .999
     epsilon = 1
-    model, model_name = model8(lr, beta1, beta2, epsilon)
+    # model, model_name = model8(lr, beta1, beta2, epsilon)
+    model, model_name = model9()
 
     print(model.summary())
 
     train_l = 0
-    train_h = 20
+    train_h = 28000
     train_batch_size = 10
     train_batches = train_h / train_batch_size
 
     valid_l = train_h
-    valid_h = 30
-    valid_batch_size = 5
+    valid_h = 31000
+    valid_batch_size = 10
     valid_batches = (valid_h - valid_l) / valid_batch_size
 
     train_history = model.fit_generator(generator=ImageSequence(train_labels[train_l:train_h],
                                                                 batch_size=train_batch_size,
                                                                 start=train_l),
                                         steps_per_epoch=train_batches,
-                                        epochs=1,
+                                        epochs=5,
                                         validation_data=ImageSequence(train_labels[valid_l:valid_h],
                                                                       batch_size=valid_batch_size,
                                                                       start=valid_l),
