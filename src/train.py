@@ -335,6 +335,15 @@ def model9():
     return model, "model9"
 
 
+def model10(lr, beta1, beta2, epsilon):
+    n_classes = 2
+    model = ResNet18(input_shape=(224, 224, 3), classes=n_classes)
+    adam = Adam(lr=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon)
+    # train
+    model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=[act_1, pred_1])
+    return model, "model10"
+
+
 # TODO: move to predict.py
 
 def load_model(model):
@@ -392,69 +401,11 @@ def precision_metric(y_true, y_pred):
     return precision
 
 
-# TODO: move to search.py
+# TODO: add optional arguments to write_csv so that it can handle different sets of hyper-parameters for diff models
 
-def search_parameters(lrs, beta1s, beta2s, epsilons, train_labels):
-    now = datetime.datetime.now()
-    model_id = str(now.day) + "-" + str(now.hour) + "-" + str(now.minute) + "-" + str(now.second)
-    destination = root + "searches/" + model_id + "/"
-    if not os.path.isdir(destination):
-        os.mkdir(destination)
-    csv_file = open(destination + 'eggs.csv', 'w', newline='')
-    head = ['type', 'learning rate', 'momentum', 'neurons', 'filers', 'epoch 1', 'epoch 2', ' ... ']
-    spam_writer = csv.writer(csv_file, delimiter=';',
-                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
-    train_l = 0
-    train_h = 2800
-    train_batch_size = 10
-    train_batches = train_h / train_batch_size
-
-    valid_l = train_h
-    valid_h = 3100
-    valid_batch_size = 5  # valid_batch_size =10 and valid_batches = 1 does not work ... cra
-    valid_batches = (valid_h - valid_l) / valid_batch_size
-    spam_writer.writerow(head)
-    for lr in lrs:
-        for beta1 in beta1s:
-            for beta2 in beta2s:
-                for e in epsilons:
-                    # TODO: pass model function in as an argument
-                    model, model_name = model8(lr, beta1, beta2, e)
-                    train_history = model.fit_generator(
-                        generator=ImageSequence(train_labels[train_l:train_h],
-                                                batch_size=train_batch_size,
-                                                start=train_l),
-                        steps_per_epoch=train_batches,
-                        epochs=4,
-                        validation_data=ImageSequence(train_labels[valid_l:valid_h],
-                                                      batch_size=valid_batch_size,
-                                                      start=valid_l),
-                        validation_steps=valid_batches)
-
-                    losses = train_history.history['loss']
-                    val_losses = train_history.history['val_loss']
-                    predict_1 = train_history.history['pred_1']
-                    actually_1 = train_history.history['act_1']
-
-                    spam_writer.writerow(["train", lr, beta1, beta2, e] + losses)
-                    spam_writer.writerow(["valid", lr, beta1, beta2, e] + val_losses)
-                    spam_writer.writerow(["pred_1", lr, beta1, beta2, e] + predict_1)
-                    spam_writer.writerow(["act_1", lr, beta1, beta2, e] + actually_1)
-
-    spam_writer.writerow(["train_data",
-                          "train_labels: " + str(train_l) + ":" + str(train_h),
-                          "batch_size: " + str(train_batch_size),
-                          model_name])
-    spam_writer.writerow(["test_data",
-                          "test_labels: " + str(valid_l) + ":" + str(valid_h),
-                          "batch_size: " + str(valid_batch_size)])
-
-    csv_file.close()
-
-
-def write_csv(csv_file, train_history, lr, beta1, beta2, epsilon, train_l, train_h,
-              train_batch_size, valid_l, valid_h, valid_batch_size, model_name, notes):
+def write_csv(csv_file, train_history, train_l, train_h,
+              train_batch_size, valid_l, valid_h, valid_batch_size, model_name, notes,
+              lr, beta1, beta2, epsilon):
     head = ['type', 'epoch 1', 'epoch 2', ' ... ']
     spam_writer = csv.writer(csv_file, delimiter=';',
                              quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -511,8 +462,7 @@ def main():
     beta1 = .8
     beta2 = .999
     epsilon = 1
-    # model, model_name = model8(lr, beta1, beta2, epsilon)
-    model, model_name = model9()
+    model, model_name = model10(lr, beta1, beta2, epsilon)
 
     print(model.summary())
 
@@ -530,7 +480,7 @@ def main():
                                                                 batch_size=train_batch_size,
                                                                 start=train_l),
                                         steps_per_epoch=train_batches,
-                                        epochs=5,
+                                        epochs=10,
                                         validation_data=ImageSequence(train_labels[valid_l:valid_h],
                                                                       batch_size=valid_batch_size,
                                                                       start=valid_l),
@@ -545,8 +495,8 @@ def main():
 
     notes = ["trained on my mac", "December 9 2018"]
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
-        write_csv(csv_file, train_history, lr, beta1, beta2, epsilon, train_l, train_h, train_batch_size, valid_l,
-                  valid_h, valid_batch_size, model_name, notes)
+        write_csv(csv_file, train_history, train_l, train_h, train_batch_size, valid_l,
+                  valid_h, valid_batch_size, model_name, notes, lr, beta1, beta2, epsilon)
 
     with open(destination + "model.json", "w") as json_file:
         json_model = model.to_json()
