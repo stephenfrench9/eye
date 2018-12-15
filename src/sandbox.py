@@ -10,9 +10,11 @@ from classification_models.resnet import preprocess_input
 
 if __name__ == '__main__':
     train_labels = train.data()
-    image_sequence = train.ImageSequence(train_labels=train_labels, batch_size=10, start=0)
+    image_sequence = train.ImageSequence(train_labels=train_labels, batch_size=20, start=0)
 
     x0 = image_sequence.__getitem__(0)[0]  # (10, 224, 224, 3)
+    y0 = image_sequence.__getitem__(0)[1]
+
     x1 = x0[0]  # (224, 224, 3)
     print("10 items (x0)")
     print(x0.shape)
@@ -22,9 +24,10 @@ if __name__ == '__main__':
     plt.imsave("RAW_INPUT", x1[:, :, 0])
     x2 = np.expand_dims(x0, 0)  # (1, 224, 224, 3)
 
-    model, model_name = train.model10(.1, .9, .999, 1)
+    model11, model_name = train.model11(.1, .9, .999, 1)
+    model12, model_name = train.model12(.1, .9, .999, 1)
 
-    y = model.predict(x0)
+    y = model12.predict(x0)
     print(y.shape)
     print(y)
 

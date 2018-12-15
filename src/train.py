@@ -119,7 +119,7 @@ class ImageSequence(Sequence):
         return int(np.ceil((len(self.train_labels)) / float(self.batch_size))) - 1
 
     def __getitem__(self, idx):
-        y = np.ones((self.batch_size, 1))
+        y = np.ones((self.batch_size, 3))
         x = np.ones((1, 224, 224, 4))
         dm = 512
         # y = to_cate
@@ -137,10 +137,10 @@ class ImageSequence(Sequence):
             x = np.append(x, [im], axis=0)
             # y[i] = self.train_labels.at[sample, self.labels.get(0)]
             g = self.train_labels.ix[sample]
-            y[i, :] = np.array(g[2:3])
+            y[i, :] = np.array(g[2:5])
 
         x = x[1:, :, :, 1:]
-        y = keras.utils.to_categorical(y, num_classes=2)
+        # y = keras.utils.to_categorical(y, num_classes=2)
 
         maximum = np.max(x)
         maximum = abs(maximum)
@@ -344,6 +344,29 @@ def model10(lr, beta1, beta2, epsilon):
     return model, "model10"
 
 
+def model11(lr, beta1, beta2, epsilon):
+    n_classes = 3
+    model = ResNet18(input_shape=(224, 224, 3), classes=n_classes)
+    adam = Adam(lr=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon)
+    # train
+    model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=[act_1, pred_1])
+    return model, "model11"
+
+
+def model12(lr, beta1, beta2, epsilon):
+    n_classes = 3
+
+    base_model = ResNet18(input_shape=(224, 224, 3), weights='imagenet', include_top=False)
+    x = Flatten()(base_model.output)
+    output = Dense(n_classes, activation='sigmoid')(x)
+    model = Model(inputs=[base_model.input], outputs=[output])
+    adam = Adam(lr=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon)
+
+    # train
+    model.compile(optimizer=adam, loss='binary_crossentropy', metrics=[act_1, pred_1])
+    return model, "model12"
+
+
 # TODO: move to predict.py
 
 def load_model(model):
@@ -462,7 +485,7 @@ def main():
     beta1 = .8
     beta2 = .999
     epsilon = 1
-    model, model_name = model10(lr, beta1, beta2, epsilon)
+    model, model_name = model12(lr, beta1, beta2, epsilon)
 
     print(model.summary())
 
@@ -480,7 +503,7 @@ def main():
                                                                 batch_size=train_batch_size,
                                                                 start=train_l),
                                         steps_per_epoch=train_batches,
-                                        epochs=10,
+                                        epochs=8,
                                         validation_data=ImageSequence(train_labels[valid_l:valid_h],
                                                                       batch_size=valid_batch_size,
                                                                       start=valid_l),
@@ -493,7 +516,7 @@ def main():
     if not os.path.isdir(destination):
         os.mkdir(destination)
 
-    notes = ["trained on my mac", "December 9 2018"]
+    notes = ["trained on my mac", "December 14 2018"]
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
         write_csv(csv_file, train_history, train_l, train_h, train_batch_size, valid_l,
                   valid_h, valid_batch_size, model_name, notes, lr, beta1, beta2, epsilon)

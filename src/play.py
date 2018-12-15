@@ -54,7 +54,7 @@ def write_performance_multi(model, precisions, recalls, notes):
 
 if __name__ == '__main__':
     train_labels = train.data()
-    modelOfInterest = "9-12-14-55/"
+    modelOfInterest = "14-6-25/"
     model = train.load_model(modelOfInterest)
 
     # load test data

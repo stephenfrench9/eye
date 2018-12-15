@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 if __name__ == "__main__":
-    modelOfInterest = "9-12-14-55/"
+    modelOfInterest = "14-6-25/"
     root = "./"
 
     model = train.load_model(modelOfInterest)
@@ -27,14 +27,14 @@ if __name__ == "__main__":
 
     while currentGroup < numGroups:
         print("start of group: " + str(currentGroup))
-        x = np.ones((1, 512, 512, 4))
+        x = np.ones((1, 224, 224, 4))
         trials = []
         while x.shape[0] - 1 < batch_size and currentGroup < numGroups:
             raw_index = currentGroup*4
-            image_0 = plt.imread("test/" + testPics[raw_index + 0]).reshape(512, 512, 1)
-            image_1 = plt.imread("test/" + testPics[raw_index + 1]).reshape(512, 512, 1)
-            image_2 = plt.imread("test/" + testPics[raw_index + 2]).reshape(512, 512, 1)
-            image_3 = plt.imread("test/" + testPics[raw_index + 3]).reshape(512, 512, 1)
+            image_0 = plt.imread("test/" + testPics[raw_index + 0]).reshape(512, 512, 1)[0:224, 0:224, :]
+            image_1 = plt.imread("test/" + testPics[raw_index + 1]).reshape(512, 512, 1)[0:224, 0:224, :]
+            image_2 = plt.imread("test/" + testPics[raw_index + 2]).reshape(512, 512, 1)[0:224, 0:224, :]
+            image_3 = plt.imread("test/" + testPics[raw_index + 3]).reshape(512, 512, 1)[0:224, 0:224, :]
 
             trials.append(testPics[raw_index][:-9])
             currentGroup += 1
@@ -47,7 +47,7 @@ if __name__ == "__main__":
             x = np.append(x, [im], axis=0)
 
         # trim
-        x = x[1:, :, :, :]
+        x = x[1:, :, :, 1:]
         o = x.shape
 
         # collapse to single index
