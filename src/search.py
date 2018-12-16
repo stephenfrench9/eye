@@ -18,13 +18,13 @@ def search_parameters(lrs, beta1s, beta2s, epsilons, train_labels):
                              quotechar='"', quoting=csv.QUOTE_MINIMAL)
     # TODO: add a search configuration file
     train_l = 0
-    train_h = 30
+    train_h = 5600
     train_batch_size = 10
     train_batches = train_h / train_batch_size
 
     valid_l = train_h
-    valid_h = 40
-    valid_batch_size = 5  # valid_batch_size =10 and valid_batches = 1 does not work ... cra
+    valid_h = 6200
+    valid_batch_size = 10  # valid_batch_size =10 and valid_batches = 1 does not work ... cra
     valid_batches = (valid_h - valid_l) / valid_batch_size
     spam_writer.writerow(head)
 
@@ -35,16 +35,23 @@ def search_parameters(lrs, beta1s, beta2s, epsilons, train_labels):
             for beta2 in beta2s:
                 for e in epsilons:
                     # TODO: pass model function in as an argument
-                    model, model_name = train.model10(lr, beta1, beta2, e)
+                    image_sequence = train.ImageSequence(train_labels=train_labels, batch_size=20, dm=512, start=0,
+                                                         predictions=3)
+
+                    model, dm, model_name = train.model13(lr, beta1, beta2, e)
                     train_history = model.fit_generator(
                         generator=train.ImageSequence(train_labels[train_l:train_h],
                                                       batch_size=train_batch_size,
-                                                      start=train_l),
+                                                      dm=512,
+                                                      start=train_l,
+                                                      predictions=3),
                         steps_per_epoch=train_batches,
-                        epochs=3,
+                        epochs=5,
                         validation_data=train.ImageSequence(train_labels[valid_l:valid_h],
                                                             batch_size=valid_batch_size,
-                                                            start=valid_l),
+                                                            dm=512,
+                                                            start=valid_l,
+                                                            predictions=3),
                         validation_steps=valid_batches)
 
                     losses = train_history.history['loss']
@@ -74,12 +81,12 @@ def main():
     lrs = [.01, .1, 1]
     beta1s = [.8, .9]
     beta2s = [.999]
-    epsilons = [.1, 1]
-
-    lrs = [.01, .1]
-    beta1s = [.8]
-    beta2s = [.999]
     epsilons = [.1]
+
+    # lrs = [.01, .1]
+    # beta1s = [.8]
+    # beta2s = [.999]
+    # epsilons = [.1]
 
     train_labels = train.data()
 

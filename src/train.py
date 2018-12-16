@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from classification_models import ResNet18
+from classification_models import ResNet18, ResNet34
 from keras.regularizers import l2
 from keras.layers import Dense, Dropout, Flatten, AveragePooling2D
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
@@ -75,7 +75,7 @@ def data():
 
 class ImageSequence(Sequence):
 
-    def __init__(self, train_labels, batch_size, start):
+    def __init__(self, train_labels, batch_size, dm, start, prediction_start=0, predictions=1):
         self.train_labels = train_labels
         self.batch_size = batch_size
         self.base = "train/"
@@ -84,6 +84,9 @@ class ImageSequence(Sequence):
         self.yellow = "_yellow.png"
         self.green = "_green.png"
         self.start = start
+        self.dm = dm
+        self.prediction_start = prediction_start
+        self.predictions = predictions
         self.labels = {
             0: "Nucleoplasm",
             1: "Nuclear membrane",
@@ -119,27 +122,31 @@ class ImageSequence(Sequence):
         return int(np.ceil((len(self.train_labels)) / float(self.batch_size))) - 1
 
     def __getitem__(self, idx):
-        y = np.ones((self.batch_size, 3))
-        x = np.ones((1, 224, 224, 4))
-        dm = 512
-        # y = to_cate
+        y = np.ones((self.batch_size, self.predictions))
+        x = np.ones((1, self.dm, self.dm, 4))
 
         # x = np.ones((1, 512, 512))
         for i in range(self.batch_size):
             sample = self.start + i + idx * self.batch_size
-            b = imread(self.base + self.train_labels.at[sample, 'Id'] + self.red).reshape((512, 512, 1))[0:224, 0:224, :]
-            r = imread(self.base + self.train_labels.at[sample, 'Id'] + self.blue).reshape((512, 512, 1))[0:224, 0:224, :]
-            ye = imread(self.base + self.train_labels.at[sample, 'Id'] + self.yellow).reshape((512, 512, 1))[0:224, 0:224, :]
-            g = imread(self.base + self.train_labels.at[sample, 'Id'] + self.green).reshape((512, 512, 1))[0:224, 0:224, :]
+            b = imread(self.base + self.train_labels.at[sample, 'Id'] + self.red).reshape(
+                (512, 512, 1))[0:self.dm, 0:self.dm, :]
+            r = imread(self.base + self.train_labels.at[sample, 'Id'] + self.blue).reshape(
+                (512, 512, 1))[0:self.dm, 0:self.dm, :]
+            ye = imread(self.base + self.train_labels.at[sample, 'Id'] + self.yellow).reshape(
+                (512, 512, 1))[0:self.dm, 0:self.dm, :]
+            g = imread(self.base + self.train_labels.at[sample, 'Id'] + self.green).reshape(
+                (512, 512, 1))[0:self.dm, 0:self.dm, :]
             im = np.append(b, r, axis=2)
             im = np.append(im, ye, axis=2)
             im = np.append(im, g, axis=2)
             x = np.append(x, [im], axis=0)
             # y[i] = self.train_labels.at[sample, self.labels.get(0)]
             g = self.train_labels.ix[sample]
-            y[i, :] = np.array(g[2:5])
+            lower_i = 2 + self.prediction_start
+            upper_i = 2 + self.predictions
+            y[i, :] = np.array(g[lower_i:upper_i])
 
-        x = x[1:, :, :, 1:]
+        x = x[1:, :, :, 1:]  # cheat to remove the blue filter is in place.
         # y = keras.utils.to_categorical(y, num_classes=2)
 
         maximum = np.max(x)
@@ -341,7 +348,7 @@ def model10(lr, beta1, beta2, epsilon):
     adam = Adam(lr=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon)
     # train
     model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=[act_1, pred_1])
-    return model, "model10"
+    return model, 224, "model10"
 
 
 def model11(lr, beta1, beta2, epsilon):
@@ -365,6 +372,20 @@ def model12(lr, beta1, beta2, epsilon):
     # train
     model.compile(optimizer=adam, loss='binary_crossentropy', metrics=[act_1, pred_1])
     return model, "model12"
+
+
+def model13(lr, beta1, beta2, epsilon):
+    n_classes = 3
+
+    base_model = ResNet34(input_shape=(512, 512, 3), weights='imagenet', include_top=False)
+    x = Flatten()(base_model.output)
+    output = Dense(n_classes, activation='sigmoid')(x)
+    model = Model(inputs=[base_model.input], outputs=[output])
+    adam = Adam(lr=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon)
+
+    # train
+    model.compile(optimizer=adam, loss='binary_crossentropy', metrics=[act_1, pred_1])
+    return model, 512, "model13"
 
 
 # TODO: move to predict.py
