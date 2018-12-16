@@ -18,12 +18,12 @@ def search_parameters(lrs, beta1s, beta2s, epsilons, train_labels):
                              quotechar='"', quoting=csv.QUOTE_MINIMAL)
     # TODO: add a search configuration file
     train_l = 0
-    train_h = 5600
+    train_h = 2800
     train_batch_size = 10
     train_batches = train_h / train_batch_size
 
     valid_l = train_h
-    valid_h = 6200
+    valid_h = 3100
     valid_batch_size = 10  # valid_batch_size =10 and valid_batches = 1 does not work ... cra
     valid_batches = (valid_h - valid_l) / valid_batch_size
     spam_writer.writerow(head)
@@ -79,7 +79,7 @@ def search_parameters(lrs, beta1s, beta2s, epsilons, train_labels):
 
 def main():
     lrs = [.01, .1, 1]
-    beta1s = [.8, .9]
+    beta1s = [.9]
     beta2s = [.999]
     epsilons = [.1]
 
