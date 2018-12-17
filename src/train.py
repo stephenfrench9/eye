@@ -10,7 +10,8 @@ import warnings
 
 from classification_models import ResNet18, ResNet34
 from keras.regularizers import l2
-from keras.layers import Dense, Dropout, Flatten, AveragePooling2D
+from keras.applications import InceptionResNetV2
+from keras.layers import Dense, Dropout, Flatten, AveragePooling2D, Input
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
 from keras.models import Sequential, model_from_json, Model
 from keras.optimizers import SGD, Adam
@@ -390,6 +391,34 @@ def model13(lr, beta1, beta2, epsilon):
     return model, dm, predictions, "model13"
 
 
+def model14():
+    dm = 299
+    predictions = 28
+    input_shape = (dm, dm, 3)
+    n_out = 28
+    pretrain_model = InceptionResNetV2(
+        include_top=False,
+        weights='imagenet',
+        input_shape=input_shape)
+
+    input_tensor = Input(shape=input_shape)
+    bn = BatchNormalization()(input_tensor)
+    x = pretrain_model(bn)
+    x = Conv2D(128, kernel_size=(1, 1), activation='relu')(x)
+    x = Flatten()(x)
+    x = Dropout(0.5)(x)
+    x = Dense(512, activation='relu')(x)
+    x = Dropout(0.5)(x)
+    output = Dense(n_out, activation='sigmoid')(x)
+    model = Model(input_tensor, output)
+    for layer in model.layers[0:3]:
+        layer.trainable = False
+
+    model.compile(loss='binary_crossentropy', optimizer=Adam(.0001), metrics=[act_1, pred_1])
+
+    return model, dm, predictions, "model14"
+
+
 # TODO: move to predict.py
 
 def load_model(model):
@@ -504,11 +533,11 @@ def main():
 
     # TODO: build a configuration file
     # train a model
-    lr = .1
-    beta1 = .8
-    beta2 = .999
-    epsilon = 1
-    model, dm, predictions, model_name = model13(lr, beta1, beta2, epsilon)
+    lr = -1
+    beta1 = -1
+    beta2 = -1
+    epsilon = -1
+    model, dm, predictions, model_name = model14()
 
     print(model.summary())
 

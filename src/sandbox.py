@@ -10,7 +10,7 @@ from classification_models.resnet import preprocess_input
 
 if __name__ == '__main__':
     train_labels = train.data()
-    image_sequence = train.ImageSequence(train_labels=train_labels, batch_size=20, dm=200, start=0, predictions=3)
+    image_sequence = train.ImageSequence(train_labels=train_labels, batch_size=20, dm=299, start=0, predictions=28)
 
     # get inputs and outputs
     x0 = image_sequence.__getitem__(0)[0]  # (10, 224, 224, 3)
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     # make predictions
     modelOfInterest = "17-7-25/"
-    model = train.load_model(modelOfInterest)
+    model = train.model14()
     y = model.predict(x0)
 
     print("Predictions")
@@ -40,4 +40,5 @@ if __name__ == '__main__':
     print("True output shape: " + str(y0.shape))
     # print(model.summary())
 
+    print(model.summary())
 
