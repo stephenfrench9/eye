@@ -377,7 +377,7 @@ def model12(lr, beta1, beta2, epsilon):
 def model13(lr, beta1, beta2, epsilon):
     n_classes = 3
 
-    base_model = ResNet34(input_shape=(512, 512, 3), weights='imagenet', include_top=False)
+    base_model = ResNet34(input_shape=(512, 512, 3), include_top=False)
     x = Flatten()(base_model.output)
     output = Dense(n_classes, activation='sigmoid')(x)
     model = Model(inputs=[base_model.input], outputs=[output])
@@ -506,7 +506,7 @@ def main():
     beta1 = .8
     beta2 = .999
     epsilon = 1
-    model, model_name = model12(lr, beta1, beta2, epsilon)
+    model, picture_size, model_name = model13(lr, beta1, beta2, epsilon)
 
     print(model.summary())
 
@@ -522,12 +522,16 @@ def main():
 
     train_history = model.fit_generator(generator=ImageSequence(train_labels[train_l:train_h],
                                                                 batch_size=train_batch_size,
-                                                                start=train_l),
+                                                                dm=512,
+                                                                start=train_l,
+                                                                predictions=3),
                                         steps_per_epoch=train_batches,
                                         epochs=8,
                                         validation_data=ImageSequence(train_labels[valid_l:valid_h],
                                                                       batch_size=valid_batch_size,
-                                                                      start=valid_l),
+                                                                      dm=512,
+                                                                      start=valid_l,
+                                                                      predictions=3),
                                         validation_steps=valid_batches)
 
     # save stuff
@@ -537,7 +541,7 @@ def main():
     if not os.path.isdir(destination):
         os.mkdir(destination)
 
-    notes = ["trained on my mac", "December 14 2018"]
+    notes = ["trained on my mac", "December " + str(now.day) + " 2018"]
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
         write_csv(csv_file, train_history, train_l, train_h, train_batch_size, valid_l,
                   valid_h, valid_batch_size, model_name, notes, lr, beta1, beta2, epsilon)

@@ -12,23 +12,33 @@ if __name__ == '__main__':
     train_labels = train.data()
     image_sequence = train.ImageSequence(train_labels=train_labels, batch_size=20, dm=512, start=0, predictions=3)
 
+    # get inputs and outputs
     x0 = image_sequence.__getitem__(0)[0]  # (10, 224, 224, 3)
     y0 = image_sequence.__getitem__(0)[1]
 
-    x1 = x0[0]  # (224, 224, 3)
-    print("10 items (x0)")
-    print(x0.shape)
-    print("1 item (three channels) (x1)")
-    print(x1.shape)
+    print("input batch: " + str(x0.shape))
 
-    plt.imsave("RAW_INPUT", x1[:, :, 0])
+    # verify images
+    x1 = x0[0]  # (224, 224, 3)
+    print("one image: " + str(x1.shape))
+    plt.imsave("RAW_INPUT 0 channel", x1[:, :, 0])
+    plt.imsave("RAW_INPUT 1 channel", x1[:, :, 1])
+    plt.imsave("RAW_INPUT 2 channel", x1[:, :, 2])
+
     x2 = np.expand_dims(x0, 0)  # (1, 224, 224, 3)
 
-    model13, model_name = train.model13(.1, .9, .999, 1)
+    # show outputs
+    print("True Output")
+    print(y0)
 
+    # make predictions
+    model13, size, model_name = train.model13(.1, .9, .999, 1)
     y = model13.predict(x0)
+
+    print("Predictions")
     print(y)
-    print("predicted classes: " + str(y.shape))
-    print("Actual classes: " + str(y0.shape))
+    print("Predictions shape: " + str(y.shape))
+    print("True output shape: " + str(y0.shape))
+    print(model13.summary())
 
 

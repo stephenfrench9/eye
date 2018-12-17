@@ -5,9 +5,9 @@ import numpy as np
 
 if __name__ == '__main__':
     root = "./"
-    searchOfInterest = "9-2-6-33/"
+    searchOfInterest = "16-5-39-13/"
 
-    csv_file = open(root + "searches/" + searchOfInterest + "eggs.csv", 'r', newline='')
+    csv_file = open(root + "searches/" + searchOfInterest + "search_session.csv", 'r', newline='')
 
     reader = csv.reader(csv_file, delimiter=";")
 
