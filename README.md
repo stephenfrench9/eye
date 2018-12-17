@@ -122,3 +122,34 @@ We see an improved validation loss, but the performance is poor. Recall is .62 a
 ### Search
 
 ### Train
+
+## Model 12 - Resnet18, with pretrained weights (training session 15-12-12/)
+
+### Train
+
+Resnet18 is a deep residual network used for image classification. A deeper version of it won the ILSVRC 2015 classification task. This implementation is adapted from this repository: https://github.com/qubvel/classification_models. The image size for the 2015 ImageNet challenge was 224 pixels in 3-channels, so I select the top left 224 x 224 x 3 section of the cell images. I use the 'Adam' optimizer. I set [lr, beta1, beta2, epsilon] = [0.1, 0.8, 0.999, 1]. I attempt to predict 3 classes, and train to 8 epochs. The results of the training session are graphed below.
+
+<img src="./readmePics/15-12model12epochs8.png" alt=".." width="350"/> <img src="./readmePics/15-12model12weights.png" alt=".." width="350"/>
+
+Note that the green line indicates the portion of class 1 which is truely a 1, and the yellow line gives the fraction of time the net predicted a 1 for class 1. Also, note that there are a handful of large weights. This is undesirable, though it is likely the case that the original model had these weights before training happened
+
+This model predicts all 0's after training. Before training, it predicts the same value for every picture, though it predicts different values for the 0, 1, 2 classes.
+
+## Model 13 - Resnet18, without pretrained weights (training session 17-7-25/)
+
+### Train
+
+This is the same model as 12, except with random initialized weights.
+
+The results for the training session are shown below.
+
+<img src="./readmePics/17-7-25/training_session.png" alt=".." width="350"/> <img src="./readmePics/17-7-25/weight_distribution.png" alt=".." width="350"/>
+
+Note that the weight distribution has improved, but it still has some run-away weights. The vast majority of the 11 million are small. Compare this to the weight distribution of the randomly initialized network:
+
+<figure>
+	<img src="./readmePics/17-7-25/weight_distribution_init.png" alt=".." width="" 	description="this is a thing"/>
+	<figcaption>Figure 13-1: Weight distribution for randomly initialized 	network<figcaption/>
+</figure>
+
+The validation loss curve is erratic for this model, and the training loss fails to improve substantially. Additionally, the weights are not uniformly distributed before training. 

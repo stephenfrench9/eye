@@ -376,8 +376,10 @@ def model12(lr, beta1, beta2, epsilon):
 
 def model13(lr, beta1, beta2, epsilon):
     n_classes = 3
+    dm = 200
+    predictions = 3
 
-    base_model = ResNet34(input_shape=(512, 512, 3), include_top=False)
+    base_model = ResNet18(input_shape=(dm, dm, predictions), include_top=False)
     x = Flatten()(base_model.output)
     output = Dense(n_classes, activation='sigmoid')(x)
     model = Model(inputs=[base_model.input], outputs=[output])
@@ -385,7 +387,7 @@ def model13(lr, beta1, beta2, epsilon):
 
     # train
     model.compile(optimizer=adam, loss='binary_crossentropy', metrics=[act_1, pred_1])
-    return model, 512, "model13"
+    return model, dm, predictions, "model13"
 
 
 # TODO: move to predict.py
@@ -506,7 +508,7 @@ def main():
     beta1 = .8
     beta2 = .999
     epsilon = 1
-    model, picture_size, model_name = model13(lr, beta1, beta2, epsilon)
+    model, dm, predictions, model_name = model13(lr, beta1, beta2, epsilon)
 
     print(model.summary())
 
@@ -522,16 +524,16 @@ def main():
 
     train_history = model.fit_generator(generator=ImageSequence(train_labels[train_l:train_h],
                                                                 batch_size=train_batch_size,
-                                                                dm=512,
+                                                                dm=dm,
                                                                 start=train_l,
-                                                                predictions=3),
+                                                                predictions=predictions),
                                         steps_per_epoch=train_batches,
                                         epochs=8,
                                         validation_data=ImageSequence(train_labels[valid_l:valid_h],
                                                                       batch_size=valid_batch_size,
-                                                                      dm=512,
+                                                                      dm=dm,
                                                                       start=valid_l,
-                                                                      predictions=3),
+                                                                      predictions=predictions),
                                         validation_steps=valid_batches)
 
     # save stuff

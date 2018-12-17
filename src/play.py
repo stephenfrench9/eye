@@ -54,16 +54,20 @@ def write_performance_multi(model, precisions, recalls, notes):
 
 if __name__ == '__main__':
     train_labels = train.data()
-    modelOfInterest = "14-6-25/"
+    modelOfInterest = "17-7-25/"
     model = train.load_model(modelOfInterest)
 
     # load test data
     batch_size = 30
     valid_l = 28000
     valid_h = 31000
+    dm = 512
+    predictions = 3
     test_generator = train.ImageSequence(train_labels=train_labels[valid_l:valid_h],
                                          batch_size=batch_size,
-                                         start=valid_l)
+                                         dm=dm,
+                                         start=valid_l,
+                                         predictions=predictions)
     # initialize confusion matrix
     membership = 0  # column of predicted and actual results to examine
     a0 = np.zeros((2, 2))
