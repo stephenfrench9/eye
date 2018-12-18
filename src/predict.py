@@ -8,7 +8,7 @@ if __name__ == "__main__":
     modelOfInterest = "14-6-25/"
     root = "./"
 
-    model = train.load_model(modelOfInterest)
+    model = train.standard_load_model(modelOfInterest)
 
     print(model.summary())
 

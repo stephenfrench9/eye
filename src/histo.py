@@ -10,8 +10,8 @@ import train
 
 if __name__ == "__main__":
     root = "./"
-    model_of_interest = "17-11-20/"
-    model = train.load_model(model_of_interest)
+    model_of_interest = "18-16-41/"
+    model = train.standard_load_model(model_of_interest)
 
     weights = model.get_weights()
 

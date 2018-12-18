@@ -493,7 +493,7 @@ def model15():
 
 # TODO: move to predict.py
 
-def load_model(model):
+def standard_load_model(model):
     """
     :return: a model
     """

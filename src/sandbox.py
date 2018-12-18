@@ -10,7 +10,11 @@ from classification_models.resnet import preprocess_input
 
 if __name__ == '__main__':
     train_labels = train.data()
-    model, dm, channels, predictions, model_name = train.model15()
+    model, dm, channels, predictions, model_name = train.model14()
+    modelOfInterest = "17-17-22/"
+    model = train.standard_load_model(modelOfInterest)
+
+
 
     image_sequence = train.ImageSequence(train_labels=train_labels,
                                          batch_size=20,

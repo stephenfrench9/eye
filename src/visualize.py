@@ -5,7 +5,7 @@ import numpy as np
 
 if __name__ == '__main__':
     root = "./"
-    searchOfInterest = "16-5-39-13/"
+    searchOfInterest = "18-16-41/"
 
     csv_file = open(root + "searches/" + searchOfInterest + "search_session.csv", 'r', newline='')
 
