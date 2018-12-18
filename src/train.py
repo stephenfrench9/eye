@@ -11,7 +11,7 @@ import warnings
 from classification_models import ResNet18, ResNet34
 from keras.regularizers import l2
 from keras.applications import InceptionResNetV2
-from keras.layers import Dense, Dropout, Flatten, AveragePooling2D, Input
+from keras.layers import Dense, Dropout, Flatten, AveragePooling2D, Input, ReLU, Concatenate, Activation
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
 from keras.models import Sequential, model_from_json, Model
 from keras.optimizers import SGD, Adam
@@ -76,7 +76,7 @@ def data():
 
 class ImageSequence(Sequence):
 
-    def __init__(self, train_labels, batch_size, dm, start, prediction_start=0, predictions=1):
+    def __init__(self, train_labels, batch_size, dm, start, prediction_start=0, predictions=1, channels=3):
         self.train_labels = train_labels
         self.batch_size = batch_size
         self.base = "train/"
@@ -88,6 +88,7 @@ class ImageSequence(Sequence):
         self.dm = dm
         self.prediction_start = prediction_start
         self.predictions = predictions
+        self.channels = channels
         self.labels = {
             0: "Nucleoplasm",
             1: "Nuclear membrane",
@@ -147,7 +148,7 @@ class ImageSequence(Sequence):
             upper_i = 2 + self.predictions
             y[i, :] = np.array(g[lower_i:upper_i])
 
-        x = x[1:, :, :, 1:]  # cheat to remove the blue filter is in place.
+        x = x[1:, :, :, 0:self.channels]  # cheat to remove the blue filter is in place.
         # y = keras.utils.to_categorical(y, num_classes=2)
 
         maximum = np.max(x)
@@ -392,9 +393,13 @@ def model13(lr, beta1, beta2, epsilon):
 
 
 def model14():
+    """
+    vitoly byranchanooks model
+    """
     dm = 299
     predictions = 28
-    input_shape = (dm, dm, 3)
+    channels = 3
+    input_shape = (dm, dm, channels)
     n_out = 28
     pretrain_model = InceptionResNetV2(
         include_top=False,
@@ -416,7 +421,74 @@ def model14():
 
     model.compile(loss='binary_crossentropy', optimizer=Adam(.0001), metrics=[act_1, pred_1])
 
-    return model, dm, predictions, "model14"
+    return model, dm, channels, predictions, "model15"
+
+
+def model15():
+    """
+    michal haltuf's model
+    https://www.kaggle.com/rejpalcz/cnn-128x128x4-keras-from-scratch-lb-0-328
+    """
+    dm = 192
+    channels = 3
+    input_shape = (dm, dm, channels)
+    dropRate = 0.25
+    predictions = 28
+
+    init = Input(input_shape)
+    x = BatchNormalization(axis=-1)(init)
+    x = Conv2D(8, (3, 3))(x)
+    x = ReLU()(x)
+    x = BatchNormalization(axis=-1)(x)
+    x = Conv2D(8, (3, 3))(x)
+    x = ReLU()(x)
+    x = BatchNormalization(axis=-1)(x)
+    x = Conv2D(16, (3, 3))(x)
+    x = ReLU()(x)
+    x = BatchNormalization(axis=-1)(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+    x = Dropout(dropRate)(x)
+    c1 = Conv2D(16, (3, 3), padding='same')(x)
+    c1 = ReLU()(c1)
+    c2 = Conv2D(16, (5, 5), padding='same')(x)
+    c2 = ReLU()(c2)
+    c3 = Conv2D(16, (7, 7), padding='same')(x)
+    c3 = ReLU()(c3)
+    c4 = Conv2D(16, (1, 1), padding='same')(x)
+    c4 = ReLU()(c4)
+    x = Concatenate()([c1, c2, c3, c4])
+    x = BatchNormalization(axis=-1)(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+    x = Dropout(dropRate)(x)
+    x = Conv2D(32, (3, 3))(x)
+    x = ReLU()(x)
+    x = BatchNormalization(axis=-1)(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+    x = Dropout(dropRate)(x)
+    x = Conv2D(64, (3, 3))(x)
+    x = ReLU()(x)
+    x = BatchNormalization(axis=-1)(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+    x = Dropout(dropRate)(x)
+    x = Conv2D(128, (3, 3))(x)
+    x = ReLU()(x)
+    x = BatchNormalization(axis=-1)(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+    x = Dropout(dropRate)(x)
+    x = Flatten()(x)
+    x = Dropout(0.5)(x)
+    x = Dense(28)(x)
+    x = ReLU()(x)
+    x = BatchNormalization(axis=-1)(x)
+    x = Dropout(0.1)(x)
+    x = Dense(28)(x)
+    x = Activation('sigmoid')(x)
+
+    model = Model(init, x)
+
+    model.compile(loss='binary_crossentropy', optimizer=Adam(.0001), metrics=[act_1, pred_1])
+
+    return model, dm, channels, predictions, "model15"
 
 
 # TODO: move to predict.py
@@ -537,7 +609,7 @@ def main():
     beta1 = -1
     beta2 = -1
     epsilon = -1
-    model, dm, predictions, model_name = model14()
+    model, dm, channels, predictions, model_name = model15()
 
     print(model.summary())
 
@@ -555,14 +627,16 @@ def main():
                                                                 batch_size=train_batch_size,
                                                                 dm=dm,
                                                                 start=train_l,
-                                                                predictions=predictions),
+                                                                predictions=predictions,
+                                                                channels=channels),
                                         steps_per_epoch=train_batches,
-                                        epochs=8,
+                                        epochs=12,
                                         validation_data=ImageSequence(train_labels[valid_l:valid_h],
                                                                       batch_size=valid_batch_size,
                                                                       dm=dm,
                                                                       start=valid_l,
-                                                                      predictions=predictions),
+                                                                      predictions=predictions,
+                                                                      channels=channels),
                                         validation_steps=valid_batches)
 
     # save stuff
