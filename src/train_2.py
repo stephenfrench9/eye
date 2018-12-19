@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import cv2
 from imgaug import augmenters as iaa
-from tqdm import tqdm
+# from tqdam import tqdm
 
 import warnings
 
@@ -39,8 +39,9 @@ import train
 root = "./"
 
 
-
 ######################## level 3 ######################################################
+
+
 def create_model(input_shape, n_out):
     pretrain_model = InceptionResNetV2(
         include_top=False,
@@ -59,7 +60,6 @@ def create_model(input_shape, n_out):
     model = Model(input_tensor, output)
 
     return model
-
 
 
 ######################## level 2 ######################################################
@@ -130,8 +130,8 @@ if __name__ == "__main__":
     ######################## level 3 ######################################################
 
     ######################## level 2 ######################################################
-    path_to_train = '/kaggle/input/train/'
-    data = pd.read_csv('/kaggle/input/train.csv')
+    path_to_train = root + 'train/'
+    data = pd.read_csv(root + 'train.csv')
     train_dataset_info = []
     for name, labels in zip(data['Id'], data['Target'].str.split(' ')):
         train_dataset_info.append({
@@ -139,16 +139,17 @@ if __name__ == "__main__":
             'labels': np.array([int(label) for label in labels])})
     train_dataset_info = np.array(train_dataset_info)
 
-
     keras.backend.clear_session()
     model = create_model(
         input_shape=(299, 299, 3),
         n_out=28)
     model.summary()
 
-
     train_ids, test_ids, train_targets, test_target = train_test_split(
         data['Id'], data['Target'], test_size=0.2, random_state=42)
+
+    INPUT_SHAPE = (299, 299, 3)
+    BATCH_SIZE = 10
 
     ######################## level 1 ######################################################
     model.layers[2].trainable = True
@@ -171,7 +172,6 @@ if __name__ == "__main__":
     checkpointer = ModelCheckpoint(
         destination + 'InceptionResNetV2.model',
         verbose=2, save_best_only=True)
-
 
     ######################## level 0 ######################################################
     history = model.fit_generator(
