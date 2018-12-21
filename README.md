@@ -187,12 +187,39 @@ The entire model was trained on 1000 images for 8 epochs with the Adam optimizer
 
 <img src="./readmePics/17-17-22/training_session.png" alt=".." width="350"/> <img src="./readmePics/17-17-22/weight_distribution.png" alt=".." width="350"/>
 
-The same model was trained again, this time on all the images, over 15 epochs, and with the InceptionResNet weights frozen. This generated the following loss curve:
+The same model was trained again, this time on all the images, over 15 epochs, and with the InceptionResNet weights frozen. The model looks like this: 
+
+	Layer (type)                 Output Shape              Param    
+	input_2 (InputLayer)         (None, 299, 299, 3)       0         
+	_________________________________________________________________
+	batch_normalization_204 (Bat (None, 299, 299, 3)       12        
+	_________________________________________________________________
+	inception_resnet_v2 (Model)  (None, 8, 8, 1536)        54336736  
+	_________________________________________________________________
+	conv2d_204 (Conv2D)          (None, 8, 8, 128)         196736    
+	_________________________________________________________________
+	flatten_1 (Flatten)          (None, 8192)              0         
+	_________________________________________________________________
+	dropout_1 (Dropout)          (None, 8192)              0         
+	_________________________________________________________________
+	dense_1 (Dense)              (None, 512)               4194816   
+	_________________________________________________________________
+	dropout_2 (Dropout)          (None, 512)               0         
+	_________________________________________________________________
+	dense_2 (Dense)              (None, 28)                14364     
+	=================================================================
+	Total params: 58,742,664
+	Trainable params: 4,405,916
+	Non-trainable params: 54,336,748
+	_________________________________________________________________
+
+
+Note that there are far fewer trainable parameters, which allowed me to train this model on the entire dataset. This generated the following loss curve:
 
 <img src="./readmePics/18-16-41/training_session.png" alt=".." width="350"/>
 
 Unfortunately, this model was corrupted as it was saved. It remains to be seen if a model with frozen weights can be saved. Also, I should check and make sure that I can load the model before I turn the aws machine off. Also, this may be because I severed the connection to the aws machine.
 
 ### Conclusion
-This model has successfully be training on this task by other people, yet it did not work for me. 
+This model has successful for other people in the past. It must be that my data generation scheme is preventing a successfull model. 
 

@@ -609,7 +609,7 @@ def main():
     beta1 = -1
     beta2 = -1
     epsilon = -1
-    model, dm, channels, predictions, model_name = model15()
+    model, dm, channels, predictions, model_name = model14()
 
     print(model.summary())
 

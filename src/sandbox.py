@@ -1,53 +1,52 @@
-import train
+
 import matplotlib.pyplot as plt
 
 import numpy as np
-from keras.applications.imagenet_utils import decode_predictions
+import os
+import pandas as pd
+from sklearn.model_selection import train_test_split
 
 from classification_models import ResNet18
 from classification_models.resnet import preprocess_input
 
+import train_2
 
 if __name__ == '__main__':
-    train_labels = train.data()
-    model, dm, channels, predictions, model_name = train.model14()
-    modelOfInterest = "17-17-22/"
-    model = train.standard_load_model(modelOfInterest)
+    root = "./"
+    INPUT_SHAPE = (299, 299, 3)
+    BATCH_SIZE = 10
+    path_to_train = root + 'train/'
+    data = pd.read_csv(root + 'train.csv')
+
+    train_dataset_info = []
+    for name, labels in zip(data['Id'], data['Target'].str.split(' ')):
+        train_dataset_info.append({
+            'path': os.path.join(path_to_train, name),
+            'labels': np.array([int(label) for label in labels])})
+    train_dataset_info = np.array(train_dataset_info)
+
+    train_ids, test_ids, train_targets, test_target = train_test_split(
+        data['Id'], data['Target'], test_size=0.2, random_state=42)
+
+    train_generator = train_2.data_generator.create_train(
+        train_dataset_info[train_ids.index], BATCH_SIZE, INPUT_SHAPE, augument=True)
+
+    validation_generator = train_2.data_generator.create_train(
+        train_dataset_info[test_ids.index], 256, INPUT_SHAPE, augument=False)
 
 
 
-    image_sequence = train.ImageSequence(train_labels=train_labels,
-                                         batch_size=20,
-                                         dm=dm,
-                                         start=0,
-                                         predictions=predictions,
-                                         channels=channels)
+
 
     # get inputs and outputs
-    x0 = image_sequence.__getitem__(0)[0]  # (10, 224, 224, 3)
-    y0 = image_sequence.__getitem__(0)[1]
-
-    print("input batch: " + str(x0.shape))
 
     # verify images
-    x1 = x0[0]  # (224, 224, 3)
-    print("one image: " + str(x1.shape))
-    plt.imsave("RAW_INPUT 0 channel", x1[:, :, 0])
-    plt.imsave("RAW_INPUT 1 channel", x1[:, :, 1])
-    plt.imsave("RAW_INPUT 2 channel", x1[:, :, 2])
 
     # show outputs
-    print("True Output")
-    print(y0)
 
     # make predictions
-    y = model.predict(x0)
 
-    print("Predictions")
-    print(y)
-    print("Predictions shape: " + str(y.shape))
-    print("True output shape: " + str(y0.shape))
     # print(model.summary())
 
-    print(model.summary())
+
 
