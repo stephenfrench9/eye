@@ -1,5 +1,7 @@
 import csv
 import datetime
+
+import cv2
 import keras
 import keras.backend as k
 import tensorflow as tf
@@ -7,6 +9,11 @@ import os
 import numpy as np
 import pandas as pd
 import warnings
+
+from PIL import Image
+from imgaug import augmenters as iaa
+from keras.callbacks import ModelCheckpoint
+from sklearn.model_selection import train_test_split
 
 from classification_models import ResNet18, ResNet34
 from keras.regularizers import l2
@@ -24,54 +31,51 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 root = "./"
 
 
-def data():
-    train_labels = pd.read_csv(root + "train.csv")
-    labels = {
-        0: "Nucleoplasm",
-        1: "Nuclear membrane",
-        2: "Nucleoli",
-        3: "Nucleoli fibrillar center",
-        4: "Nuclear speckles",
-        5: "Nuclear bodies",
-        6: "Endoplasmic reticulum",
-        7: "Golgi apparatus",
-        8: "Peroxisomes",
-        9: "Endosomes",
-        10: "Lysosomes",
-        11: "Intermediate filaments",
-        12: "Actin filaments",
-        13: "Focal adhesion sites",
-        14: "Microtubules",
-        15: "Microtubule ends",
-        16: "Cytokinetic bridge",
-        17: "Mitotic spindle",
-        18: "Microtubule organizing center",
-        19: "Centrosome",
-        20: "Lipid droplets",
-        21: "Plasma membrane",
-        22: "Cell junctions",
-        23: "Mitochondria",
-        24: "Aggresome",
-        25: "Cytosol",
-        26: "Cytoplasmic bodies",
-        27: "Rods & rings"
-    }
+class Data_Generator:
 
-    # reverse_train_labels = dict((v, k) for k, v in labels.items())
+    def create_train(dataset_info, batch_size, shape, augument=True):
+        assert shape[2] == 3
+        while True:
+            random_indexes = np.random.choice(len(dataset_info), batch_size)
+            batch_images = np.empty((batch_size, shape[0], shape[1], shape[2]))
+            batch_labels = np.zeros((batch_size, 28))
+            for i, idx in enumerate(random_indexes):
+                image = Data_Generator.load_image(
+                    dataset_info[idx]['path'], shape)
+                if augument:
+                    image = Data_Generator.augment(image)
+                batch_images[i] = image
+                batch_labels[i][dataset_info[idx]['labels']] = 1
+            yield batch_images, batch_labels
 
-    for key in labels.keys():
-        train_labels[labels[key]] = 0
+    def load_image(path, shape):
+        R = np.array(Image.open(path + '_red.png'))
+        G = np.array(Image.open(path + '_green.png'))
+        B = np.array(Image.open(path + '_blue.png'))
+        Y = np.array(Image.open(path + '_yellow.png'))
 
-    def fill_targets(row):
-        row.Target = np.array(row.Target.split(" ")).astype(np.int)
-        for num in row.Target:
-            name = labels[int(num)]
-            row.loc[name] = 1
-        return row
+        image = np.stack((
+            R / 2 + Y / 2,
+            G / 2 + Y / 2,
+            B), -1)
 
-    train_labels = train_labels.apply(fill_targets, axis=1)
+        image = cv2.resize(image, (shape[0], shape[1]))
+        image = np.divide(image, 255)
+        return image
 
-    return train_labels
+    def augment(image):
+        augment_img = iaa.Sequential([
+            iaa.OneOf([
+                iaa.Affine(rotate=0),
+                iaa.Affine(rotate=90),
+                iaa.Affine(rotate=180),
+                iaa.Affine(rotate=270),
+                iaa.Fliplr(0.5),
+                iaa.Flipud(0.5),
+            ])], random_order=True)
+
+        image_aug = augment_img.augment_image(image)
+        return image_aug
 
 
 class ImageSequence(Sequence):
@@ -160,7 +164,58 @@ class ImageSequence(Sequence):
         return x, y
 
 
+def get_data():
+    train_labels = pd.read_csv(root + "train.csv")
+    labels = {
+        0: "Nucleoplasm",
+        1: "Nuclear membrane",
+        2: "Nucleoli",
+        3: "Nucleoli fibrillar center",
+        4: "Nuclear speckles",
+        5: "Nuclear bodies",
+        6: "Endoplasmic reticulum",
+        7: "Golgi apparatus",
+        8: "Peroxisomes",
+        9: "Endosomes",
+        10: "Lysosomes",
+        11: "Intermediate filaments",
+        12: "Actin filaments",
+        13: "Focal adhesion sites",
+        14: "Microtubules",
+        15: "Microtubule ends",
+        16: "Cytokinetic bridge",
+        17: "Mitotic spindle",
+        18: "Microtubule organizing center",
+        19: "Centrosome",
+        20: "Lipid droplets",
+        21: "Plasma membrane",
+        22: "Cell junctions",
+        23: "Mitochondria",
+        24: "Aggresome",
+        25: "Cytosol",
+        26: "Cytoplasmic bodies",
+        27: "Rods & rings"
+    }
+
+    # reverse_train_labels = dict((v, k) for k, v in labels.items())
+
+    for key in labels.keys():
+        train_labels[labels[key]] = 0
+
+    def fill_targets(row):
+        row.Target = np.array(row.Target.split(" ")).astype(np.int)
+        for num in row.Target:
+            name = labels[int(num)]
+            row.loc[name] = 1
+        return row
+
+    train_labels = train_labels.apply(fill_targets, axis=1)
+
+    return train_labels
+
+
 # TODO: make models.py
+
 
 def model0(lrp, mp):
     ax1range = 100
@@ -421,7 +476,7 @@ def model14():
 
     model.compile(loss='binary_crossentropy', optimizer=Adam(.0001), metrics=[act_1, pred_1])
 
-    return model, dm, channels, predictions, "model15"
+    return model, input_shape, predictions, "model14"
 
 
 def model15():
@@ -550,8 +605,8 @@ def precision_metric(y_true, y_pred):
 
 # TODO: add optional arguments to write_csv so that it can handle different sets of hyper-parameters for diff models
 
-def write_csv(csv_file, train_history, train_l, train_h,
-              train_batch_size, valid_l, valid_h, valid_batch_size, model_name, notes,
+def write_csv(csv_file, train_history,
+              train_batch_size, train_batches, valid_batch_size, valid_batches, model_name,
               lr, beta1, beta2, epsilon):
     head = ['type', 'epoch 1', 'epoch 2', ' ... ']
     spam_writer = csv.writer(csv_file, delimiter=';',
@@ -572,72 +627,76 @@ def write_csv(csv_file, train_history, train_l, train_h,
 
     spam_writer.writerow(["training_header",
                           "model name",
-                          "train_labels_low",
-                          "train_labels_high",
-                          "batch_size",
-                          "learning rate",
+                          "train_batch_size",
+                          "train_batches",
+                          "valid_batch_size",
+                          "valid_batches",
+                          "lr",
                           "beta1",
                           "beta2",
                           "epsilon"])
     spam_writer.writerow(["training_values",
                           model_name,
-                          str(train_l),
-                          str(train_h),
                           str(train_batch_size),
+                          str(train_batches),
+                          str(valid_batch_size),
+                          str(valid_batches),
                           str(lr),
                           str(beta1),
                           str(beta2),
                           str(epsilon)])
-    spam_writer.writerow(["testing_header",
-                          "test_labels_low",
-                          "test_labels_high",
-                          "testing_batch_size"])
+    spam_writer.writerow(["validation_header",
+                          "validation_batch_size",
+                          "validation_batches"])
+
     spam_writer.writerow(["testing_values",
-                          str(valid_l),
-                          str(valid_h),
-                          str(valid_batch_size)])
-    spam_writer.writerow(["notes"] + notes)
+                          str(valid_batch_size),
+                          str(valid_batches)])
+
+
+def get_generators(shape, batch_size):
+    # get raw data (put addresses and labels into a list)
+
+    path_to_train = root + 'train/'
+    data = pd.read_csv(root + 'train.csv')
+
+
+    train_dataset_info = []
+    for name, labels in zip(data['Id'], data['Target'].str.split(' ')):
+        train_dataset_info.append({
+            'path': os.path.join(path_to_train, name),
+            'labels': np.array([int(label) for label in labels])})
+    train_dataset_info = np.array(train_dataset_info)
+
+    # split into train and test, wrap with generators
+    train_ids, test_ids, train_targets, test_target = train_test_split(
+        data['Id'], data['Target'], test_size=0.2, random_state=42)
+    train_generator = Data_Generator.create_train(
+        train_dataset_info[train_ids.index], batch_size, shape, augument=True)
+    validation_generator = Data_Generator.create_train(
+        train_dataset_info[test_ids.index], batch_size, shape, augument=False)
+    return train_generator, validation_generator
 
 
 def main():
-    # load the data
-    train_labels = data()
 
     # TODO: build a configuration file
-    # train a model
+
+    # get a model
     lr = -1
     beta1 = -1
     beta2 = -1
     epsilon = -1
-    model, dm, channels, predictions, model_name = model14()
+    model, shape, predictions, model_name = model14()
+
+    # get the data
+    batch_size = 10
+    train_batches = 100
+    valid_batches = 30
+    epochs = 200
+    train_generator, validation_generator = get_generators(shape, batch_size)
 
     print(model.summary())
-
-    train_l = 0
-    train_h = 28000
-    train_batch_size = 10
-    train_batches = train_h / train_batch_size
-
-    valid_l = train_h
-    valid_h = 31000
-    valid_batch_size = 10
-    valid_batches = (valid_h - valid_l) / valid_batch_size
-
-    train_history = model.fit_generator(generator=ImageSequence(train_labels[train_l:train_h],
-                                                                batch_size=train_batch_size,
-                                                                dm=dm,
-                                                                start=train_l,
-                                                                predictions=predictions,
-                                                                channels=channels),
-                                        steps_per_epoch=train_batches,
-                                        epochs=12,
-                                        validation_data=ImageSequence(train_labels[valid_l:valid_h],
-                                                                      batch_size=valid_batch_size,
-                                                                      dm=dm,
-                                                                      start=valid_l,
-                                                                      predictions=predictions,
-                                                                      channels=channels),
-                                        validation_steps=valid_batches)
 
     # save stuff
     now = datetime.datetime.now()
@@ -645,11 +704,21 @@ def main():
     destination = root + "models/" + model_id + "/"
     if not os.path.isdir(destination):
         os.mkdir(destination)
+    check_pointer = ModelCheckpoint(
+        destination + 'InceptionResNetV2.model',
+        verbose=2, save_best_only=True)
 
-    notes = ["trained on my mac", "December " + str(now.day) + " 2018"]
+    # train
+    train_history = model.fit_generator(generator=train_generator,
+                                        steps_per_epoch=train_batches,
+                                        epochs=epochs,
+                                        validation_data=validation_generator,
+                                        validation_steps=valid_batches,
+                                        callbacks=[check_pointer])
+
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
-        write_csv(csv_file, train_history, train_l, train_h, train_batch_size, valid_l,
-                  valid_h, valid_batch_size, model_name, notes, lr, beta1, beta2, epsilon)
+        write_csv(csv_file, train_history, batch_size, train_batches, batch_size,
+                  valid_batches, model_name, lr, beta1, beta2, epsilon)
 
     with open(destination + "model.json", "w") as json_file:
         json_model = model.to_json()

@@ -88,7 +88,7 @@ def main():
     # beta2s = [.999]
     # epsilons = [.1]
 
-    train_labels = train.data()
+    train_labels = train.get_data()
 
     search_parameters(lrs, beta1s, beta2s, epsilons, train_labels=train_labels)
 

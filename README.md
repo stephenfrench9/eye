@@ -221,5 +221,5 @@ Note that there are far fewer trainable parameters, which allowed me to train th
 Unfortunately, this model was corrupted as it was saved. It remains to be seen if a model with frozen weights can be saved. Also, I should check and make sure that I can load the model before I turn the aws machine off. Also, this may be because I severed the connection to the aws machine.
 
 ### Conclusion
-This model has successful for other people in the past. It must be that my data generation scheme is preventing a successfull model. 
+This model has successful for other people in the past. It must be that my data generation scheme is preventing a successfull fit. 
 

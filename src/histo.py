@@ -10,18 +10,18 @@ import train
 
 if __name__ == "__main__":
     root = "./"
-    model_of_interest = "18-16-41/"
+    model_of_interest = "21-15-9/"
     model = train.standard_load_model(model_of_interest)
 
     weights = model.get_weights()
-
     print(model.summary())
+    # I want to see the weights list for each layer
 
     x = np.ones((1,))
     for w in weights:
-        print(w.shape)
+        # print(w.shape)
         w = w.flatten()
-        x = np.append(x, w, axis =0)
+        x = np.append(x, w, axis=0)
     x = x[1:]
 
     max = np.round(np.max(x), 2)
