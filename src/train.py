@@ -632,25 +632,22 @@ def write_csv(csv_file, train_history,
     print("1")
     losses = train_history.history['loss']
     val_losses = train_history.history['val_loss']
-    train_f1 = train_history.history['f1']
-    val_f1 = train_history.history['val_f1']
 
-    print("1.5")
-    print(train_history.history.keys())
-
+    # train_f1 = train_history.history['f1']
+    # val_f1 = train_history.history['val_f1']
     # predict_1 = train_history.history['pred_1']
     # actually_1 = train_history.history['act_1']
-    print("2")
+
     spam_writer.writerow(["train"] + losses)
     spam_writer.writerow(["valid"] + val_losses)
-    spam_writer.writerow(["f1"] + train_f1)
-    spam_writer.writerow(["val_f1"] + val_f1)
 
+    # spam_writer.writerow(["f1"] + train_f1)
+    # spam_writer.writerow(["val_f1"] + val_f1)
     # spam_writer.writerow(["pred_1"] + predict_1)
     # spam_writer.writerow(["act_1"] + actually_1)
-    print("3")
+
     spam_writer.writerow([" ... "])
-    print("4")
+
     spam_writer.writerow(["training_header",
                           "model name",
                           "train_batch_size",
