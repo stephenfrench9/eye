@@ -637,7 +637,7 @@ def write_csv(csv_file, train_history,
     # val_f1 = train_history.history['val_f1']
     # predict_1 = train_history.history['pred_1']
     # actually_1 = train_history.history['act_1']
-
+    print("2")
     spam_writer.writerow(["train"] + losses)
     spam_writer.writerow(["valid"] + val_losses)
 
@@ -647,7 +647,7 @@ def write_csv(csv_file, train_history,
     # spam_writer.writerow(["act_1"] + actually_1)
 
     spam_writer.writerow([" ... "])
-
+    print("3")
     spam_writer.writerow(["training_header",
                           "model name",
                           "train_batch_size",
@@ -658,6 +658,7 @@ def write_csv(csv_file, train_history,
                           "beta1",
                           "beta2",
                           "epsilon"])
+    print("4")
     spam_writer.writerow(["training_values",
                           model_name,
                           str(train_batch_size),
@@ -710,6 +711,7 @@ def main():
     beta1 = -1
     beta2 = -1
     epsilon = -1
+    print("a")
     model, shape, predictions, model_name = model14()
 
     # get the data
@@ -717,8 +719,9 @@ def main():
     train_batches = 3
     valid_batches = 3
     epochs = 2
+    print("b")
     train_generator, validation_generator = get_generators(shape, batch_size)
-
+    print("c")
     print(model.summary())
 
     # save stuff
@@ -727,21 +730,23 @@ def main():
     destination = root + "models/" + model_id + "/"
     if not os.path.isdir(destination):
         os.mkdir(destination)
+    print("d")
     check_pointer = ModelCheckpoint(
         destination + 'InceptionResNetV2.model',
         verbose=2, save_best_only=True)
 
     # train
+    print("e")
     train_history = model.fit_generator(generator=train_generator,
                                         steps_per_epoch=train_batches,
                                         epochs=epochs,
                                         validation_data=validation_generator,
                                         validation_steps=valid_batches,
                                         callbacks=[check_pointer])
-
-    with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
-        write_csv(csv_file, train_history, batch_size, train_batches, batch_size,
-                  valid_batches, model_name, lr, beta1, beta2, epsilon)
+    print("f")
+    # with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
+    #     write_csv(csv_file, train_history, batch_size, train_batches, batch_size,
+    #               valid_batches, model_name, lr, beta1, beta2, epsilon)
 
     # with open(destination + "model.json", "w") as json_file:
     #     json_model = model.to_json()
