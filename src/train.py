@@ -638,7 +638,7 @@ def write_csv(csv_file, train_history,
     acc = train_history.history['acc']
     # predict_1 = train_history.history['pred_1']
     # actually_1 = train_history.history['act_1']
-
+    print(train_history.history.keys())
     spam_writer.writerow(["train"] + losses)
     spam_writer.writerow(["valid"] + val_losses)
     spam_writer.writerow(["f1"] + train_f1)
@@ -712,14 +712,14 @@ def main():
     beta1 = -1
     beta2 = -1
     epsilon = -1
-    print("a")
+
     model, shape, predictions, model_name = model14()
 
     # get the data
-    batch_size = 2
-    train_batches = 1
-    valid_batches = 1
-    epochs = 1
+    batch_size = 10
+    train_batches = 100
+    valid_batches = 25
+    epochs = 180
 
     train_generator, validation_generator = get_generators(shape, batch_size)
 

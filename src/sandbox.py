@@ -41,7 +41,7 @@ def act_1(y_true, y_pred):
 if __name__ == '__main__':
     root = "./"
     model, shape, predictions, model_name = train.model14()
-    model_of_interest = "31-6-14/"
+    model_of_interest = "31-7-32/"
     keras.backend.clear_session()
 
     # model = train.standard_load_model(model_of_interest)
@@ -52,7 +52,9 @@ if __name__ == '__main__':
     # )
 
     model = load_model(
-        root + 'models/' + model_of_interest + 'InceptionResNetV2.model')
+        root + 'models/' + model_of_interest + 'InceptionResNetV2.model',
+        custom_objects={'f1': train.f1})
+
 
     lr = -1
     beta1 = -1
