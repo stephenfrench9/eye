@@ -490,8 +490,7 @@ def model14():
 
     # Difference
     model.compile(loss='binary_crossentropy',
-                  optimizer=Adam(.0001),
-                  metrics=['acc', f1])
+                  optimizer=Adam(.0001))
 
     return model, input_shape, predictions, "model14"
 

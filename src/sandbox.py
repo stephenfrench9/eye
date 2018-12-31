@@ -52,8 +52,7 @@ if __name__ == '__main__':
     # )
 
     model = load_model(
-        root + 'models/' + model_of_interest + 'InceptionResNetV2.model',
-        custom_objects={'f1': train.f1})
+        root + 'models/' + model_of_interest + 'InceptionResNetV2.model')
 
     lr = -1
     beta1 = -1
