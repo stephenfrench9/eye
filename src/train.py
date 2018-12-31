@@ -719,7 +719,7 @@ def main():
     batch_size = 10
     train_batches = 100
     valid_batches = 25
-    epochs = 180
+    epochs = 60
 
     train_generator, validation_generator = get_generators(shape, batch_size)
 
