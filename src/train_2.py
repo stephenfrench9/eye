@@ -139,16 +139,16 @@ if __name__ == "__main__":
             'labels': np.array([int(label) for label in labels])})
     train_dataset_info = np.array(train_dataset_info)
 
+    INPUT_SHAPE = (299, 299, 3)
     keras.backend.clear_session()
     model = create_model(
-        input_shape=(299, 299, 3),
+        input_shape=INPUT_SHAPE,
         n_out=28)
     model.summary()
 
     train_ids, test_ids, train_targets, test_target = train_test_split(
         data['Id'], data['Target'], test_size=0.2, random_state=42)
 
-    INPUT_SHAPE = (299, 299, 3)
     BATCH_SIZE = 10
 
     ######################## level 1 ######################################################
@@ -176,8 +176,8 @@ if __name__ == "__main__":
     ######################## level 0 ######################################################
     history = model.fit_generator(
         train_generator,
-        steps_per_epoch=100,
+        steps_per_epoch=10,
         validation_data=next(validation_generator),
-        epochs=180,
+        epochs=2,
         verbose=1,
         callbacks=[checkpointer])

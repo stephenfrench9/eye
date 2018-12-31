@@ -38,19 +38,22 @@ def act_1(y_true, y_pred):
     return possible_positives / yy
 
 
-
 if __name__ == '__main__':
     root = "./"
     model, shape, predictions, model_name = train.model14()
-    model_of_interest = "21-23-53/"
+    model_of_interest = "30-19-15/"
     keras.backend.clear_session()
 
-    model = train.standard_load_model(model_of_interest)
+    # model = train.standard_load_model(model_of_interest)
 
     # model = load_model(
-    #     root + 'models/' + model_of_interest + 'InceptionResNetV2.model',
+
     #     custom_objects={'act_1': act_1, 'pred_1': pred_1}
     # )
+
+    model = load_model(
+        root + 'models/' + model_of_interest + 'InceptionResNetV2.model',
+        custom_objects={'f1': train.f1})
 
     lr = -1
     beta1 = -1
