@@ -485,12 +485,13 @@ def model14():
     output = Dense(n_out, activation='sigmoid')(x)
     model = Model(input_tensor, output)
     # Difference
-    for layer in model.layers[0:3]:
-        layer.trainable = False
+    # for layer in model.layers[0:3]:
+    #     layer.trainable = False
 
     # Difference
     model.compile(loss='binary_crossentropy',
-                  optimizer=Adam(.0001))
+                  optimizer=Adam(.0001),
+                  metrics=['acc', f1])
 
     return model, input_shape, predictions, "model14"
 
@@ -715,13 +716,13 @@ def main():
     model, shape, predictions, model_name = model14()
 
     # get the data
-    batch_size = 10
-    train_batches = 3
-    valid_batches = 3
-    epochs = 2
-    print("b")
+    batch_size = 2
+    train_batches = 1
+    valid_batches = 1
+    epochs = 1
+
     train_generator, validation_generator = get_generators(shape, batch_size)
-    print("c")
+
     print(model.summary())
 
     # save stuff
@@ -730,29 +731,29 @@ def main():
     destination = root + "models/" + model_id + "/"
     if not os.path.isdir(destination):
         os.mkdir(destination)
-    print("d")
+
     check_pointer = ModelCheckpoint(
         destination + 'InceptionResNetV2.model',
         verbose=2, save_best_only=True)
 
     # train
-    print("e")
+
     train_history = model.fit_generator(generator=train_generator,
                                         steps_per_epoch=train_batches,
                                         epochs=epochs,
                                         validation_data=validation_generator,
                                         validation_steps=valid_batches,
                                         callbacks=[check_pointer])
-    print("f")
-    # with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
-    #     write_csv(csv_file, train_history, batch_size, train_batches, batch_size,
-    #               valid_batches, model_name, lr, beta1, beta2, epsilon)
 
-    # with open(destination + "model.json", "w") as json_file:
-    #     json_model = model.to_json()
-    #     json_file.write(json_model)
-    #
-    # model.save(destination + "weights")
+    with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
+        write_csv(csv_file, train_history, batch_size, train_batches, batch_size,
+                  valid_batches, model_name, lr, beta1, beta2, epsilon)
+
+    with open(destination + "model.json", "w") as json_file:
+        json_model = model.to_json()
+        json_file.write(json_model)
+
+    model.save(destination + "weights")
 
 
 if __name__ == "__main__":

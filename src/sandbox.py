@@ -41,7 +41,7 @@ def act_1(y_true, y_pred):
 if __name__ == '__main__':
     root = "./"
     model, shape, predictions, model_name = train.model14()
-    model_of_interest = "30-21-53/"
+    model_of_interest = "31-6-14/"
     keras.backend.clear_session()
 
     # model = train.standard_load_model(model_of_interest)
