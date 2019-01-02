@@ -156,6 +156,8 @@ The validation loss curve is erratic for this model, and the training loss fails
 
 ## Model 14 - Augmented InceptionResNetV2, with pretrained weights (training session 18-16-41/)
 
+I load most of this model from the Keras.applications library. It is the InceptionResnetModel, with weights loaded from the 'imagenet' competition. The rest is an augmentation written by Vitoly Byranchonok (https://www.kaggle.com/byrachonok/pretrained-inceptionresnetv2-base-classifier).
+
 ### Architecture
 
 	Layer (type)                 Output Shape              Param    
@@ -222,4 +224,28 @@ Unfortunately, this model was corrupted as it was saved. It remains to be seen i
 
 ### Conclusion
 This model has successful for other people in the past. It must be that my data generation scheme is preventing a successfull fit. 
+
+# Model 14 again (31-9-1/)
+This time I use a different preprocessing stragegy with the image. Previously, I was just grabbing a 300X300X3 subset of the image, and using that. I justified it by saying that the patterns that I am looking for are generally image-wide (though not always). This assumption is looking to be incorrect, so I use the entire image, first compressing using the cv2 library, and I also flip the images over both horizontal and vertical axes, and rotate the image as well, following Vitoly Byranchonok (https://www.kaggle.com/byrachonok/pretrained-inceptionresnetv2-base-classifier)
+
+### train
+The training scheme is successful this time, producing the following loss curves and weight distribution for the model. 
+
+<img src="./readmePics/31-9-1/training_session.png" alt=".." width="350"/> <img src="./readmePics/31-9-1/weight_distribution.png" alt=".." width="350"/>
+
+Note that the validation loss is still improving at epoch 60, and that the weights are starting to become larger. Around 100 of the 54 million weights are starting to become very large. These facts suggest more training, as well as more agressive regularization of the weights in the suffix network. 
+
+Each epoch of 100 batches of size 10 took about 660 seconds.
+
+### Performance
+
+This model achieves a raw performance score of .190 and 1752/2021 placement on the kaggle leaderboard. The f1 score on the validation data is ~.10. 
+
+### Conclusion
+I need to train more, but this already took 12 hours to do 60 epochs. I need a speedup. There are two options: 1) just enable multiprocessing in the fit_generator method, and possibly make the batch size bigger. 2) I could cache the images as I load them, increasing my usage of RAM. General wisdom is to only do one of these strategies at a time. Lets try both and see if I get any sort of speedup and the accompanying improvement in performance. 
+
+# Model 14 again (/)
+
+### train
+This time I use multiprocessing to utilize all four cores available for a speedup of about 4x. 
 

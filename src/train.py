@@ -26,6 +26,7 @@ from keras.optimizers import SGD, Adam
 from keras.utils import Sequence
 from scipy.misc import imread
 from skimage.io import imread
+from tqdm import tqdm
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -716,10 +717,10 @@ def main():
     model, shape, predictions, model_name = model14()
 
     # get the data
-    batch_size = 10
-    train_batches = 100
-    valid_batches = 25
-    epochs = 60
+    batch_size = 4
+    train_batches = 2
+    valid_batches = 2
+    epochs = 2
 
     train_generator, validation_generator = get_generators(shape, batch_size)
 
@@ -754,6 +755,22 @@ def main():
         json_file.write(json_model)
 
     model.save(destination + "weights")
+
+    submit = pd.read_csv('sample_submission.csv')
+
+    print("examples to predict" + str(len(submit)))
+
+    predicted = []
+    for name in tqdm(submit['Id']):
+        path = os.path.join('./test/', name)
+        image = Data_Generator.load_image(path, shape)
+        score_predict = model.predict(image[np.newaxis])[0]
+        label_predict = np.arange(28)[score_predict>=0.2]
+        str_predict_label = ' '.join(str(l) for l in label_predict)
+        predicted.append(str_predict_label)
+
+    submit['Predicted'] = predicted
+    submit.to_csv(destination + 'submission.csv', index=False)
 
 
 if __name__ == "__main__":

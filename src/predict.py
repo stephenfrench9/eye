@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 if __name__ == "__main__":
-    modelOfInterest = "14-6-25/"
+    modelOfInterest = "31-9-1/"
     root = "./"
 
     model = train.standard_load_model(modelOfInterest)
