@@ -288,14 +288,14 @@ if __name__ == '__main__':
                                  save_weights_only=False, mode='min', period=1)
 
     ######################## level 0 ######################################################
-    epochs = 1
+    epochs = 100
 
     use_multiprocessing = False  # DO NOT COMBINE MULTIPROCESSING WITH CACHE!
     workers = 1  # DO NOT COMBINE MULTIPROCESSING WITH CACHE!
 
     hist = model.fit_generator(
         tg,
-        steps_per_epoch=4,
+        steps_per_epoch=219,
         validation_data=vg,
         validation_steps=8,
         epochs=epochs,
@@ -306,7 +306,7 @@ if __name__ == '__main__':
 
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
         write_csv(csv_file, hist, train_batch_size=BATCH_SIZE, train_batches=219, valid_batch_size=BATCH_SIZE,
-                  valid_batches=219, model_name='haltuf_model', lr=-1, beta1=-1, beta2=-1, epsilon=.001)
+                  valid_batches=8, model_name='haltuf_model', lr=-1, beta1=-1, beta2=-1, epsilon=.001)
 
     ## this or that for the reasons we don't know
     pathsTest, labelsTest = getTestDataset()
