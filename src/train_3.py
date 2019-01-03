@@ -1,5 +1,7 @@
 from train import write_csv
 
+import train
+
 import cv2
 import datetime
 import keras.backend as K
@@ -80,13 +82,13 @@ class ProteinDataGenerator(keras.utils.Sequence):
         if self.use_cache == True:
             X = self.cache[indexes]
             for i, path in enumerate(paths[np.where(self.is_cached[indexes] == 0)]):
-                image = self.__load_image(path)
+                image = self.__load_image(path, self.shape)
                 self.is_cached[indexes[i]] = 1
                 self.cache[indexes[i]] = image
                 X[i] = image
         else:
             for i, path in enumerate(paths):
-                X[i] = self.__load_image(path)
+                X[i] = self.__load_image(path, self.shape)
 
         y = self.labels[indexes]
 
@@ -139,21 +141,36 @@ class ProteinDataGenerator(keras.utils.Sequence):
         for item in (self[i] for i in range(len(self))):
             yield item
 
-    def __load_image(self, path):
-        R = Image.open(path + '_red.png')
-        G = Image.open(path + '_green.png')
-        B = Image.open(path + '_blue.png')
-        Y = Image.open(path + '_yellow.png')
+    def __load_image(self, path, shape):
+        R = np.array(Image.open(path + '_red.png'))
+        G = np.array(Image.open(path + '_green.png'))
+        B = np.array(Image.open(path + '_blue.png'))
+        Y = np.array(Image.open(path + '_yellow.png'))
 
-        im = np.stack((
-            np.array(R),
-            np.array(G),
-            np.array(B),
-            np.array(Y)), -1)
+        image = np.stack((
+            R / 2 + Y / 2,
+            G / 2 + Y / 2,
+            B), -1)
 
-        im = cv2.resize(im, (SHAPE[0], SHAPE[1]))
-        im = np.divide(im, 255)
-        return im
+        image = cv2.resize(image, (shape[0], shape[1]))
+        image = np.divide(image, 255)
+        return image
+
+    # def __load_image(self, path):
+    #     R = Image.open(path + '_red.png')
+    #     G = Image.open(path + '_green.png')
+    #     B = Image.open(path + '_blue.png')
+    #     Y = Image.open(path + '_yellow.png')
+    #
+    #     im = np.stack((
+    #         np.array(R),
+    #         np.array(G),
+    #         np.array(B),
+    #         np.array(Y)), -1)
+    #
+    #     im = cv2.resize(im, (SHAPE[0], SHAPE[1]))
+    #     im = np.divide(im, 255)
+    #     return im
 
 
 def create_model(input_shape):
@@ -265,7 +282,7 @@ if __name__ == '__main__':
     ######################## level 2 ######################################################
 
     SHAPE = (192, 192, 4)
-    BATCH_SIZE = 128
+    BATCH_SIZE = 10
     pathsTrain = paths[0:lastTrainIndex]
     labelsTrain = labels[0:lastTrainIndex]
     pathsVal = paths[lastTrainIndex:]
@@ -273,11 +290,12 @@ if __name__ == '__main__':
 
     ######################## level 1 ######################################################
 
-    model = create_model(SHAPE)
-    model.compile(
-        loss='binary_crossentropy',
-        optimizer=Adam(1e-03),
-        metrics=['acc', f1])
+    # model = create_model(SHAPE)
+    model, SHAPE, n_out, model_name = train.model14()
+    # model.compile(
+    #     loss='binary_crossentropy',
+    #     optimizer=Adam(1e-03),
+    #     metrics=['acc', f1])
 
     model.summary()
 
@@ -288,16 +306,18 @@ if __name__ == '__main__':
                                  save_weights_only=False, mode='min', period=1)
 
     ######################## level 0 ######################################################
-    epochs = 100
+    epochs = 6
 
     use_multiprocessing = False  # DO NOT COMBINE MULTIPROCESSING WITH CACHE!
     workers = 1  # DO NOT COMBINE MULTIPROCESSING WITH CACHE!
 
+    print(len(tg))
+
     hist = model.fit_generator(
         tg,
-        steps_per_epoch=219,
+        steps_per_epoch=len(tg),
         validation_data=vg,
-        validation_steps=8,
+        validation_steps=len(vg),
         epochs=epochs,
         use_multiprocessing=use_multiprocessing,
         workers=workers,
@@ -305,8 +325,8 @@ if __name__ == '__main__':
         callbacks=[checkpoint])
 
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
-        write_csv(csv_file, hist, train_batch_size=BATCH_SIZE, train_batches=219, valid_batch_size=BATCH_SIZE,
-                  valid_batches=8, model_name='haltuf_model', lr=-1, beta1=-1, beta2=-1, epsilon=.001)
+        write_csv(csv_file, hist, train_batch_size=BATCH_SIZE, train_batches=len(tg), valid_batch_size=BATCH_SIZE,
+                  valid_batches=len(vg), model_name=model_name, lr=-1, beta1=-1, beta2=-1, epsilon=.001)
 
     ## this or that for the reasons we don't know
     pathsTest, labelsTest = getTestDataset()
