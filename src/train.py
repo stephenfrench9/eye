@@ -48,7 +48,7 @@ class Data_Generator:
                     image = Data_Generator.augment(image)
                 batch_images[i] = image
                 batch_labels[i][dataset_info[idx]['labels']] = 1
-            yield batch_images, batch_labels
+            yield batch_images, batch_labels[:, :14]
 
     def load_image(path, shape):
         R = np.array(Image.open(path + '_red.png'))
@@ -77,6 +77,7 @@ class Data_Generator:
             ])], random_order=True)
 
         image_aug = augment_img.augment_image(image)
+
         return image_aug
 
 
@@ -739,7 +740,6 @@ def get_generators(shape, batch_size):
 
 
 def main():
-
     # TODO: build a configuration file
 
     # get a model
@@ -748,69 +748,69 @@ def main():
     beta2 = -1
     epsilon = -1
 
-    # model, shape, predictions, model_name = model14()
+    model, shape, predictions, model_name = model16()
     shape = (299, 299, 3)
-    # get the data
-    batch_size = 4
-    train_batches = 2
-    valid_batches = 2
-    epochs = 2
+
+    batch_size = 10
+    train_batches = 100
+    valid_batches = 25
+    epochs = 60
 
     train_generator, validation_generator = get_generators(shape, batch_size)
 
-    bus, tree = next(train_generator)
-
-    print(type(bus))
-    print(type(tree))
-
-
-    # print(model.summary())
+    print(model.summary())
 
     # save stuff
-    # now = datetime.datetime.now()
-    # model_id = str(now.day) + "-" + str(now.hour) + "-" + str(now.minute)
-    # destination = root + "models/" + model_id + "/"
-    # if not os.path.isdir(destination):
-    #     os.mkdir(destination)
-    #
-    # check_pointer = ModelCheckpoint(
-    #     destination + 'InceptionResNetV2.model',
-    #     verbose=2, save_best_only=True)
-    #
-    # # train
-    #
-    # train_history = model.fit_generator(generator=train_generator,
-    #                                     steps_per_epoch=train_batches,
-    #                                     epochs=epochs,
-    #                                     validation_data=validation_generator,
-    #                                     validation_steps=valid_batches,
-    #                                     callbacks=[check_pointer])
-    #
-    # with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
-    #     write_csv(csv_file, train_history, batch_size, train_batches, batch_size,
-    #               valid_batches, model_name, lr, beta1, beta2, epsilon)
-    #
-    # with open(destination + "model.json", "w") as json_file:
-    #     json_model = model.to_json()
-    #     json_file.write(json_model)
-    #
-    # model.save(destination + "weights")
-    #
-    # submit = pd.read_csv('sample_submission.csv')
-    #
-    # print("examples to predict" + str(len(submit)))
-    #
-    # predicted = []
-    # for name in tqdm(submit['Id']):
-    #     path = os.path.join('./test/', name)
-    #     image = Data_Generator.load_image(path, shape)
-    #     score_predict = model.predict(image[np.newaxis])[0]
-    #     label_predict = np.arange(28)[score_predict>=0.2]
-    #     str_predict_label = ' '.join(str(l) for l in label_predict)
-    #     predicted.append(str_predict_label)
-    #
-    # submit['Predicted'] = predicted
-    # submit.to_csv(destination + 'submission.csv', index=False)
+    now = datetime.datetime.now()
+    model_id = str(now.day) + "-" + str(now.hour) + "-" + str(now.minute)
+    destination = root + "models/" + model_id + "/"
+    if not os.path.isdir(destination):
+        os.mkdir(destination)
+
+    check_pointer = ModelCheckpoint(
+        destination + 'InceptionResNetV2.model',
+        verbose=2, save_best_only=True)
+
+    # train
+
+    train_history = model.fit_generator(generator=train_generator,
+                                        steps_per_epoch=train_batches,
+                                        epochs=epochs,
+                                        validation_data=validation_generator,
+                                        validation_steps=valid_batches,
+                                        callbacks=[check_pointer])
+
+    with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
+        write_csv(csv_file, train_history, batch_size, train_batches, batch_size,
+                  valid_batches, model_name, lr, beta1, beta2, epsilon)
+
+    with open(destination + "model.json", "w") as json_file:
+        json_model = model.to_json()
+        json_file.write(json_model)
+
+    model.save(destination + "weights")
+
+    submit = pd.read_csv('sample_submission.csv')
+
+    T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
+         0.231, 0.363, 0.117, 0.0001]
+
+    T_first = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,
+         0.113, 0.387]
+
+    T = np.array(T_first)
+
+    predicted = []
+    for name in tqdm(submit['Id']):
+        path = os.path.join('./test/', name)
+        image = Data_Generator.load_image(path, shape)
+        score_predict = model.predict(image[np.newaxis])[0]
+        label_predict = np.arange(14)[score_predict >= T]
+        str_predict_label = ' '.join(str(l) for l in label_predict)
+        predicted.append(str_predict_label)
+
+    submit['Predicted'] = predicted
+    submit.to_csv(destination + 'submission.csv', index=False)
 
 
 if __name__ == "__main__":
