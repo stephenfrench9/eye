@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     root = "./"
 
-    model_of_interest = "31-9-1/"
+    model_of_interest = "3-6-57/"
 
     print("graph eggs is running")
 
@@ -43,4 +43,4 @@ if __name__ == '__main__':
         plt.xlabel("epoch : train=red, validation=blue, pred_yes=yellow, act_yes=g")
         # plt.xticks(x)
         plt.title(training_values[0] + " (" + model_of_interest + ")\n" + training_info)
-        plt.savefig(root + "models/" + model_of_interest + "eggs.png")
+        plt.savefig(root + "models/" + model_of_interest + "training_session.png")

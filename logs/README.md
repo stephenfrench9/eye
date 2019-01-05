@@ -1,6 +1,5 @@
 # Predicting labels for microscope images
 
-## Cytoplasm, label 0
 
 ## Model 5
 ### architecture
@@ -231,11 +230,15 @@ This time I use a different preprocessing stragegy with the image. Previously, I
 ### train
 The training scheme is successful this time, producing the following loss curves and weight distribution for the model. 
 
-<img src="./readmePics/31-9-1/training_session.png" alt=".." width="350"/> <img src="./readmePics/31-9-1/weight_distribution.png" alt=".." width="350"/>
+<img src="./readmePics/31-9-1/training_session.png" alt=".." width="325"/> <img src="./readmePics/31-9-1/weight_distribution.png" alt=".." width="325"/>
 
 Note that the validation loss is still improving at epoch 60, and that the weights are starting to become larger. Around 100 of the 54 million weights are starting to become very large. These facts suggest more training, as well as more agressive regularization of the weights in the suffix network. 
 
 Each epoch of 100 batches of size 10 took about 660 seconds.
+
+### Threshold
+
+I used .2 as the threshold for all categories.
 
 ### Performance
 
@@ -244,8 +247,62 @@ This model achieves a raw performance score of .190 and 1752/2021 placement on t
 ### Conclusion
 I need to train more, but this already took 12 hours to do 60 epochs. I need a speedup. There are two options: 1) just enable multiprocessing in the fit_generator method, and possibly make the batch size bigger. 2) I could cache the images as I load them, increasing my usage of RAM. General wisdom is to only do one of these strategies at a time. Lets try both and see if I get any sort of speedup and the accompanying improvement in performance. 
 
-# Model 14 again (/)
+# Model 14, caching images  (3-6-57/)
 
 ### train
-This time I use multiprocessing to utilize all four cores available for a speedup of about 4x. 
+I use a generator that caches images as they are loaded from the hard drive. (modified haltuf generator) I train over roughly 180,000 images, seeing some images more than others (this was an error). The training took 29 hours, for a training velocity of 1.72 images/sec. I don't actually see a speedup as a result of the cacheing strategy. Note: I also did not augment the data set here, as I did before.
+
+<figure>
+<img src="./readmePics/3-6-57/training_session.png" alt="train_ses" width="350"/><img src="./readmePics/3-6-57/weight_distribution.png" alt="weights" width="350"/>	<figcaption>Figure 99: InceptionResNet trained for 39 hours over 180,000 images<figcaption/>
+</figure>
+
+### Notes
+I ran train_3.py on commit 0f5a56928677ef7f9
+
+### Threshold
+I used this as the threshold:     T = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,
+         0.113, 0.387, 0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
+         0.231, 0.363, 0.117, 0]
+
+### Performance
+
+This model achieves a raw performance score of .258
+
+### Conclusion
+It is import to compare training session 31-9-1/ with training session 3-6-57/. They are the same model but with different generators. 3-6-57/ uses a modified Haltuf generator. 
+
+* caching was not helpful in speeding training. 
+* My scheme for recording loss means I can't directly compare loss values between the two sessions
+* 31-9-1/ was trained on 60,000 images (training speed 1.6 im/sec), while 3-6-57 was trained on 180,000 images (training speed 1.7 im/sec).
+* Was the superior performance due to more training, or better thresholding? 
+* 31-9-1/ was able to do just as well with less training time when thresholded the same. This is evidence that augmentation was very helpful.
+* Further training with 31-9-1/ (augmented generator) can improve the score. 
+
+The conclusion: augmentation improves score considerably. Caching does not cause a speedup. Thresholding has a significant impact on score. 
+
+# Model16 , two instances predict 14 labels each
+
+
+# Model17, predict 14 classes at a time with frozen model14 as the top.
+Model 16 uses model instance 3-6-57/ as an initialization for the 'top' of the model, and then utlizes a new, randomly initialized suffix. The top of the model is frozen, and only the suffix (with about 200,000 weights is show) Here is the model summary: note that resnetlayer is the layer from model 14 instance 3-6-57/. 
+
+	summ
+	summ
+	summ
+	summ
+
+I use the vitoly generator with augmentation, and I train on 60,000 images (see each image about 3 times). The train time is * hours, giving a training speed of *. 
+
+### Notes
+train.py run on commit
+
+### Threshold
+I used this as the threshold:     T = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,
+         0.113, 0.387, 0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
+         0.231, 0.363, 0.117, 0]
+
+### Performance
+
+This model achieves a raw performance score of .305
+
 

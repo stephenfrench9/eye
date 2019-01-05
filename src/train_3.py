@@ -281,7 +281,7 @@ if __name__ == '__main__':
 
     ######################## level 2 ######################################################
 
-    SHAPE = (192, 192, 4)
+    SHAPE = (192, 192, 4)  # gets reset
     BATCH_SIZE = 10
     pathsTrain = paths[0:lastTrainIndex]
     labelsTrain = labels[0:lastTrainIndex]
@@ -326,7 +326,7 @@ if __name__ == '__main__':
 
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
         write_csv(csv_file, hist, train_batch_size=BATCH_SIZE, train_batches=len(tg), valid_batch_size=BATCH_SIZE,
-                  valid_batches=len(vg), model_name=model_name, lr=-1, beta1=-1, beta2=-1, epsilon=.001)
+                  valid_batches=len(vg), model_name=model_name, lr=-1, beta1=-1, beta2=-1, epsilon=.0001)
 
     ## this or that for the reasons we don't know
     pathsTest, labelsTest = getTestDataset()

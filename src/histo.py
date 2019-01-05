@@ -10,7 +10,7 @@ import train
 
 if __name__ == "__main__":
     root = "./"
-    model_of_interest = "31-9-1/"
+    model_of_interest = "3-6-57/"
     model = train.standard_load_model(model_of_interest)
 
     weights = model.get_weights()
