@@ -1,3 +1,5 @@
+import pearl_harbor
+
 import csv
 import datetime
 
@@ -48,7 +50,7 @@ class Data_Generator:
                     image = Data_Generator.augment(image)
                 batch_images[i] = image
                 batch_labels[i][dataset_info[idx]['labels']] = 1
-            yield batch_images, batch_labels[:, :14]
+            yield batch_images, batch_labels[:, 14:]
 
     def load_image(path, shape):
         R = np.array(Image.open(path + '_red.png'))
@@ -803,53 +805,51 @@ def make_predictions(destination, model, shape):
 
 def main():
     # TODO: build a configuration file
-
-    # get a model
-    lr = -1
-    beta1 = -1
-    beta2 = -1
-    epsilon = -1
-
-    model, shape, predictions, model_name = model16()
-    shape = (299, 299, 3)
-
-    batch_size = 10
-    train_batches = 100
-    valid_batches = 25
-    epochs = 60
-
-    train_generator, validation_generator = get_generators(shape, batch_size)
-
-    print(model.summary())
-
     # save stuff
     destination = get_destination()
 
+    # get data and a model
+    batch_size = 10
+    model, shape, predictions, model_name = model16()
+    train_generator, validation_generator = get_generators(shape, batch_size, .2)
+    print(model.summary())
+
+    # checkpoints
     check_pointer = ModelCheckpoint(
         destination + 'InceptionResNetV2.model',
         verbose=2, save_best_only=True)
+    time_callback = pearl_harbor.TimeHistory()
 
     # train
-
+    train_batches = 124
+    valid_batches = 31
+    epochs = 60
+    # train_batches = 3
+    # valid_batches = 3
+    # epochs = 2
     train_history = model.fit_generator(generator=train_generator,
                                         steps_per_epoch=train_batches,
                                         epochs=epochs,
                                         validation_data=validation_generator,
                                         validation_steps=valid_batches,
-                                        callbacks=[check_pointer])
+                                        callbacks=[check_pointer, time_callback])
+    stats = train_history.history
 
-    with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
-        write_csv(csv_file, train_history, batch_size, train_batches, batch_size,
-                  valid_batches, model_name, lr, beta1, beta2, epsilon)
-
+    # save model
     save_final_model(destination, model)
 
+    # save stats
+    with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
+        write_csv(csv_file, stats, time_callback.times,
+                  epochs=epochs, batch_size=batch_size, model_name=model_name, train_batches=train_batches,
+                  valid_batches=valid_batches)
+
+    # make predictions
     make_predictions(destination, model, shape)
 
 
 if __name__ == "__main__":
     # TODO: add argparse for naming of the model, and to instruct users how to use train.py
-
     main()
 
 
