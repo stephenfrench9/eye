@@ -53,7 +53,8 @@ def main():
     # save stats
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
         train.write_csv(csv_file, stats, time_callback.times,
-                        epochs=epochs, batch_size=batch_size, model_name=model_name, validation_split=validation_split)
+                        epochs=epochs, batch_size=batch_size, model_name=model_name,
+                        validation_split=validation_split, num_images=num_images)
 
     # make predictions
     train.make_predictions(destination, model, shape)
