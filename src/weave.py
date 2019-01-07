@@ -1,4 +1,5 @@
 import csv
+import pandas as pd
 if __name__ == '__main__':
     model1 = '7-3-59/'
     model2 = '7-4-58/'
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     print(lines2[1])
     print(len(lines2))
 
+    predicted = []
     with open(destination1 + 'composite_results.csv', 'w', newline='') as csv_file:
         spam_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         spam_writer.writerow(lines2[0])
@@ -44,23 +46,20 @@ if __name__ == '__main__':
                 b = [str(int(i)+14) for i in b]
             b = ' '.join(b)
 
-            print(type(b))
-            print(len(b))
-            print(b)
-            print()
-
             if lines1[i+1][1] == '':
-                spam_writer.writerow([lines1[i + 1][0]])
-                # spam_writer.writerow([lines1[i+1][0]] + [lines2[i+1][1]])
+                final_string = b
+            elif b == '':
+                final_string = lines1[i+1][1]
             else:
-                spam_writer.writerow([lines1[i+1][0]] + [lines1[i+1][1]])
-                # spam_writer.writerow([lines1[i+1][0]] + [lines1[i+1][1] + ' ' + b])
+                final_string = lines1[i+1][1] + ' ' + b
 
+            print(final_string)
+            predicted.append(final_string)
 
-
-
-
-
+    print(predicted)
+    submit = pd.read_csv('sample_submission.csv')
+    submit['Predicted'] = predicted
+    submit.to_csv(destination1 + 'submission_combined.csv', index=False)
 
     f.close()
     g.close()

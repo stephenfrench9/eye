@@ -20,7 +20,7 @@ def main():
     print("welcome to the pearl harbor")
     num_images = 31070
     # archive destination
-    destination = train.get_destination()
+    destination = train.get_new_destination()
 
     # get model and data
     model, shape, n_out, model_name = train.model16()
@@ -56,9 +56,15 @@ def main():
                         epochs=epochs, batch_size=batch_size, model_name=model_name,
                         validation_split=validation_split, num_images=num_images)
 
-    # make predictions
-    train.make_predictions(destination, model, shape)
+    T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
+         0.231, 0.363, 0.117, 0.0001]
 
+    T_first = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,
+         0.113, 0.387]
+
+    # make predictions
+    original = "original_submission_ph.csv"
+    train.make_predictions(destination, original, model, shape, thresholds=T_first)
 
 if __name__ == '__main__':
     main()

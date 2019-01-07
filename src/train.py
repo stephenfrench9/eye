@@ -762,7 +762,13 @@ def get_generators(shape, batch_size, validation_fraction):
     return train_generator, validation_generator
 
 
-def get_destination():
+def get_old_destination(model_of_interest):
+    model_id = model_of_interest
+    destination = root + "models/" + model_id + "/"
+    return destination
+
+
+def get_new_destination():
     now = datetime.datetime.now()
     model_id = str(now.day) + "-" + str(now.hour) + "-" + str(now.minute)
     destination = root + "models/" + model_id + "/"
@@ -779,7 +785,7 @@ def save_final_model(destination, model):
     model.save(destination + "weights")
 
 
-def make_predictions(destination, model, shape):
+def make_predictions(destination, name, model, shape, thresholds):
     submit = pd.read_csv('sample_submission.csv')
 
     T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
@@ -788,7 +794,7 @@ def make_predictions(destination, model, shape):
     T_first = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,
          0.113, 0.387]
 
-    T = np.array(T_first)
+    T = np.array(thresholds)
 
     predicted = []
     for name in tqdm(submit['Id']):
@@ -800,13 +806,13 @@ def make_predictions(destination, model, shape):
         predicted.append(str_predict_label)
 
     submit['Predicted'] = predicted
-    submit.to_csv(destination + 'submission.csv', index=False)
+    submit.to_csv(destination + name, index=False)
 
 
 def main():
     # TODO: build a configuration file
     # save stuff
-    destination = get_destination()
+    destination = get_new_destination()
 
     # get data and a model
     batch_size = 10
@@ -844,8 +850,15 @@ def main():
                   epochs=epochs, batch_size=batch_size, model_name=model_name, train_batches=train_batches,
                   valid_batches=valid_batches)
 
+    T_first = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,
+         0.113, 0.387]
+
+    T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
+         0.231, 0.363, 0.117, 0.0001]
+
     # make predictions
-    make_predictions(destination, model, shape)
+    original = "original_submission.csv"
+    make_predictions(destination, original, model, shape, thresholds=T_last)
 
 
 if __name__ == "__main__":
