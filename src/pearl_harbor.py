@@ -1,7 +1,6 @@
 import train
 import time
 
-import csv
 import keras
 from keras.callbacks import ModelCheckpoint
 
@@ -19,13 +18,13 @@ class TimeHistory(keras.callbacks.Callback):
 
 def main():
     print("welcome to the pearl harbor")
-    num_images = 20
+    num_images = 31070
     # archive destination
     destination = train.get_destination()
 
     # get model and data
-    model, shape, n_out, model_name = train.model15()
-    tg, vg = train.get_generators(shape, num_images)
+    model, shape, n_out, model_name = train.model16()
+    tg, vg = train.get_generators(shape, num_images, validation_fraction=0)
     x, y = next(tg)
 
     # see shapes
@@ -41,7 +40,7 @@ def main():
 
     # train
     batch_size = 10
-    epochs = 2
+    epochs = 3
     validation_split = .2
     hist = model.fit(x, y, batch_size, epochs,
                      validation_split=validation_split, callbacks=[time_callback, check_pointer])

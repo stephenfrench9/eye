@@ -596,7 +596,7 @@ def model16():
                   optimizer=Adam(.0001),
                   metrics=['acc', f1])
 
-    return model, input_shape, n_out, "model14"
+    return model, input_shape, n_out, "model16"
 
 
 # TODO: move to predict.py
@@ -736,7 +736,7 @@ def write_csv(csv_file, train_history, epoch_time=None, **kwargs):
     spam_writer.writerow(meta_values)
 
 
-def get_generators(shape, batch_size):
+def get_generators(shape, batch_size, validation_fraction):
     # get raw data (put addresses and labels into a list)
 
     path_to_train = root + 'train/'
@@ -752,7 +752,7 @@ def get_generators(shape, batch_size):
 
     # split into train and test, wrap with generators
     train_ids, test_ids, train_targets, test_target = train_test_split(
-        data['Id'], data['Target'], test_size=0.2, random_state=42)
+        data['Id'], data['Target'], test_size=validation_fraction, random_state=42)
     train_generator = Data_Generator.create_train(
         train_dataset_info[train_ids.index], batch_size, shape, augument=True)
     validation_generator = Data_Generator.create_train(
