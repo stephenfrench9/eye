@@ -1,28 +1,66 @@
 import train
 import time
 
-if __name__ == '__main__':
-    batch_size = 5000
+import csv
+import keras
+from keras.callbacks import ModelCheckpoint
 
+
+class TimeHistory(keras.callbacks.Callback):
+    def on_train_begin(self, logs={}):
+        self.times = []
+
+    def on_epoch_begin(self, batch, logs={}):
+        self.epoch_time_start = time.time()
+
+    def on_epoch_end(self, batch, logs={}):
+        self.times.append(time.time() - self.epoch_time_start)
+
+
+def main():
     print("welcome to the pearl harbor")
-    model, shape, n_out, model_name = train.model16()
-    tg, vg = train.get_generators(shape, batch_size)
+    num_images = 20
+    # archive destination
+    destination = train.get_destination()
 
+    # get model and data
+    model, shape, n_out, model_name = train.model15()
+    tg, vg = train.get_generators(shape, num_images)
     x, y = next(tg)
 
+    # see shapes
     print("DATA SHAPES")
     print(x.shape)
     print(y.shape)
-    bs = 10
-    epochs = 6
-    model.fit(x, y, bs, epochs)
-    print("SUCCESSFULLY TRAINED")
 
-    print()
-    print()
-    print()
-    print("PREDICTIONS")
-    # y_pred = model.predict(x)
-    # print(y_pred)
-    # print(y_pred.shape)
+    # callbacks
+    time_callback = TimeHistory()
+    check_pointer = ModelCheckpoint(
+        destination + 'InceptionResNetV2.model',
+        verbose=2, save_best_only=True)
+
+    # train
+    batch_size = 10
+    epochs = 2
+    validation_split = .2
+    hist = model.fit(x, y, batch_size, epochs,
+                     validation_split=validation_split, callbacks=[time_callback, check_pointer])
+    print("SUCCESSFULLY TRAINED")
+    stats = hist.history
+
+    # save model
+    train.save_final_model(destination, model)
+
+    # save stats
+    with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
+        train.write_csv(csv_file, stats, time_callback.times,
+                        epochs=epochs, batch_size=batch_size, model_name=model_name, validation_split=validation_split)
+
+    # make predictions
+    train.make_predictions(destination, model, shape)
+
+
+if __name__ == '__main__':
+    main()
+
 

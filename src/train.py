@@ -507,7 +507,7 @@ def model15():
     channels = 3
     input_shape = (dm, dm, channels)
     dropRate = 0.25
-    predictions = 28
+    predictions = 14
 
     init = Input(input_shape)
     x = BatchNormalization(axis=-1)(init)
@@ -551,18 +551,18 @@ def model15():
     x = Dropout(dropRate)(x)
     x = Flatten()(x)
     x = Dropout(0.5)(x)
-    x = Dense(28)(x)
+    x = Dense(predictions)(x)
     x = ReLU()(x)
     x = BatchNormalization(axis=-1)(x)
     x = Dropout(0.1)(x)
-    x = Dense(28)(x)
+    x = Dense(predictions)(x)
     x = Activation('sigmoid')(x)
 
     model = Model(init, x)
 
-    model.compile(loss='binary_crossentropy', optimizer=Adam(.0001), metrics=[act_1, pred_1])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(.0001), metrics=['acc', f1])
 
-    return model, dm, channels, predictions, "model15"
+    return model, input_shape, predictions, "model15"
 
 def model16():
     """
@@ -658,7 +658,7 @@ def precision_metric(y_true, y_pred):
 
 # TODO: add optional arguments to write_csv so that it can handle different sets of hyper-parameters for diff models
 
-def write_csv(csv_file, train_history,
+def write_csv_depracated(csv_file, train_history,
               train_batch_size, train_batches, valid_batch_size, valid_batches, model_name,
               lr, beta1, beta2, epsilon):
     head = ['type', 'epoch 1', 'epoch 2', ' ... ']
@@ -715,6 +715,27 @@ def write_csv(csv_file, train_history,
                           str(valid_batches)])
 
 
+def write_csv(csv_file, train_history, epoch_time=None, **kwargs):
+    head = ['type', 'epoch 1', 'epoch 2', ' ... ']
+    spam_writer = csv.writer(csv_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    spam_writer.writerow(head)
+
+    meta_info = kwargs.keys()
+    meta_values = kwargs.values()
+
+    metrics = train_history.keys()
+    for metric in metrics:
+        record = train_history[metric]
+        spam_writer.writerow([metric] + record)
+
+    if epoch_time is not None:
+        spam_writer.writerow(["epoch_time"] + epoch_time)
+
+    spam_writer.writerow([" ... "])
+    spam_writer.writerow(meta_info)
+    spam_writer.writerow(meta_values)
+
+
 def get_generators(shape, batch_size):
     # get raw data (put addresses and labels into a list)
 
@@ -739,57 +760,24 @@ def get_generators(shape, batch_size):
     return train_generator, validation_generator
 
 
-def main():
-    # TODO: build a configuration file
-
-    # get a model
-    lr = -1
-    beta1 = -1
-    beta2 = -1
-    epsilon = -1
-
-    model, shape, predictions, model_name = model16()
-    shape = (299, 299, 3)
-
-    batch_size = 10
-    train_batches = 100
-    valid_batches = 25
-    epochs = 60
-
-    train_generator, validation_generator = get_generators(shape, batch_size)
-
-    print(model.summary())
-
-    # save stuff
+def get_destination():
     now = datetime.datetime.now()
     model_id = str(now.day) + "-" + str(now.hour) + "-" + str(now.minute)
     destination = root + "models/" + model_id + "/"
     if not os.path.isdir(destination):
         os.mkdir(destination)
+    return destination
 
-    check_pointer = ModelCheckpoint(
-        destination + 'InceptionResNetV2.model',
-        verbose=2, save_best_only=True)
 
-    # train
-
-    train_history = model.fit_generator(generator=train_generator,
-                                        steps_per_epoch=train_batches,
-                                        epochs=epochs,
-                                        validation_data=validation_generator,
-                                        validation_steps=valid_batches,
-                                        callbacks=[check_pointer])
-
-    with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
-        write_csv(csv_file, train_history, batch_size, train_batches, batch_size,
-                  valid_batches, model_name, lr, beta1, beta2, epsilon)
-
+def save_final_model(destination, model):
     with open(destination + "model.json", "w") as json_file:
         json_model = model.to_json()
         json_file.write(json_model)
 
     model.save(destination + "weights")
 
+
+def make_predictions(destination, model, shape):
     submit = pd.read_csv('sample_submission.csv')
 
     T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
@@ -813,7 +801,55 @@ def main():
     submit.to_csv(destination + 'submission.csv', index=False)
 
 
+def main():
+    # TODO: build a configuration file
+
+    # get a model
+    lr = -1
+    beta1 = -1
+    beta2 = -1
+    epsilon = -1
+
+    model, shape, predictions, model_name = model16()
+    shape = (299, 299, 3)
+
+    batch_size = 10
+    train_batches = 100
+    valid_batches = 25
+    epochs = 60
+
+    train_generator, validation_generator = get_generators(shape, batch_size)
+
+    print(model.summary())
+
+    # save stuff
+    destination = get_destination()
+
+    check_pointer = ModelCheckpoint(
+        destination + 'InceptionResNetV2.model',
+        verbose=2, save_best_only=True)
+
+    # train
+
+    train_history = model.fit_generator(generator=train_generator,
+                                        steps_per_epoch=train_batches,
+                                        epochs=epochs,
+                                        validation_data=validation_generator,
+                                        validation_steps=valid_batches,
+                                        callbacks=[check_pointer])
+
+    with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
+        write_csv(csv_file, train_history, batch_size, train_batches, batch_size,
+                  valid_batches, model_name, lr, beta1, beta2, epsilon)
+
+    save_final_model(destination, model)
+
+    make_predictions(destination, model, shape)
+
+
 if __name__ == "__main__":
     # TODO: add argparse for naming of the model, and to instruct users how to use train.py
 
     main()
+
+
