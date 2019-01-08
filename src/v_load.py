@@ -12,17 +12,19 @@ from tqdm import tqdm
 
 if __name__ == '__main__':
 
-    model_of_interest = '7-4-58/'
+    model_of_interest = '7-3-59/'
     destination = train.get_old_destination(model_of_interest)
 
     model = load_model(
         destination + 'InceptionResNetV2.model',
         custom_objects={'f1': train_2.f1})
 
-    T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
-         0.231, 0.363, 0.117, 0.0001]
+    # T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
+    #      0.231, 0.363, 0.117, 0.0001]
 
-    train.make_predictions(destination, 'from_vload.csv', model, (299, 299, 3), thresholds=T_last)
+    T_first = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125, 0.113, 0.387]
+
+    train.make_predictions(destination, 'from_vload.csv', model, (299, 299, 3), thresholds=T_first)
 
     # submit = pd.read_csv('sample_submission.csv')
     #

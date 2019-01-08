@@ -24,7 +24,8 @@ def main():
 
     # get model and data
     model, shape, n_out, model_name = train.model16()
-    tg, vg = train.get_generators(shape, num_images, validation_fraction=0)
+    classes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    tg, vg = train.get_generators(shape, num_images, classes=classes, validation_fraction=0)
     x, y = next(tg)
 
     # see shapes

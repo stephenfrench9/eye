@@ -7,7 +7,7 @@ if __name__ == '__main__':
     destination2 = "./" + "models/" + model2
 
     f = open(destination1 + "submission.csv", 'r', newline='')
-    g = open(destination2 + "submission.csv", 'r', newline='')
+    g = open(destination2 + "corrected_submission.csv", 'r', newline='')
     doc1 = csv.reader(f, delimiter=',')
     doc2 = csv.reader(g, delimiter=',')
 

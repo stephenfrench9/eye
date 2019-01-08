@@ -37,7 +37,7 @@ root = "./"
 
 class Data_Generator:
 
-    def create_train(dataset_info, batch_size, shape, augument=True):
+    def create_train(dataset_info, batch_size, shape, classes, augument=True):
         assert shape[2] == 3
         while True:
             random_indexes = np.random.choice(len(dataset_info), batch_size)
@@ -50,7 +50,7 @@ class Data_Generator:
                     image = Data_Generator.augment(image)
                 batch_images[i] = image
                 batch_labels[i][dataset_info[idx]['labels']] = 1
-            yield batch_images, batch_labels[:, 14:]
+            yield batch_images, batch_labels[:, classes]
 
     def load_image(path, shape):
         R = np.array(Image.open(path + '_red.png'))
@@ -738,7 +738,7 @@ def write_csv(csv_file, train_history, epoch_time=None, **kwargs):
     spam_writer.writerow(meta_values)
 
 
-def get_generators(shape, batch_size, validation_fraction):
+def get_generators(shape, batch_size, classes, validation_fraction):
     # get raw data (put addresses and labels into a list)
 
     path_to_train = root + 'train/'
@@ -756,9 +756,9 @@ def get_generators(shape, batch_size, validation_fraction):
     train_ids, test_ids, train_targets, test_target = train_test_split(
         data['Id'], data['Target'], test_size=validation_fraction, random_state=42)
     train_generator = Data_Generator.create_train(
-        train_dataset_info[train_ids.index], batch_size, shape, augument=True)
+        train_dataset_info[train_ids.index], batch_size, shape, classes, augument=True)
     validation_generator = Data_Generator.create_train(
-        train_dataset_info[test_ids.index], batch_size, shape, augument=False)
+        train_dataset_info[test_ids.index], batch_size, shape, classes, augument=False)
     return train_generator, validation_generator
 
 
@@ -785,7 +785,7 @@ def save_final_model(destination, model):
     model.save(destination + "weights")
 
 
-def make_predictions(destination, name, model, shape, thresholds):
+def make_predictions(destination, pred_name, model, shape, thresholds):
     submit = pd.read_csv('sample_submission.csv')
 
     T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
@@ -806,7 +806,7 @@ def make_predictions(destination, name, model, shape, thresholds):
         predicted.append(str_predict_label)
 
     submit['Predicted'] = predicted
-    submit.to_csv(destination + name, index=False)
+    submit.to_csv(destination + pred_name, index=False)
 
 
 def main():
@@ -817,7 +817,9 @@ def main():
     # get data and a model
     batch_size = 10
     model, shape, predictions, model_name = model16()
-    train_generator, validation_generator = get_generators(shape, batch_size, .2)
+    classes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    classes = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+    train_generator, validation_generator = get_generators(shape, batch_size, classes=classes, validation_fraction=.2)
     print(model.summary())
 
     # checkpoints

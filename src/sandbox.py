@@ -41,33 +41,20 @@ def act_1(y_true, y_pred):
 
 if __name__ == '__main__':
     root = "./"
-    model, shape, predictions, model_name = train.model14()
+    # model, shape, predictions, model_name = train.model14()
+    shape = (299, 299, 3)
     model_of_interest = "3-6-57/"
     keras.backend.clear_session()
 
-    # model = train.standard_load_model(model_of_interest)
-
     # model = load_model(
-
-    #     custom_objects={'act_1': act_1, 'pred_1': pred_1}
-    # )
-
-    model = load_model(
-        root + 'models/' + model_of_interest + 'haltuf.model',
-        custom_objects={'f1': train_3.f1})
-
-
-    lr = -1
-    beta1 = -1
-    beta2 = -1
-    epsilon = -1
+    #     root + 'models/' + model_of_interest + 'haltuf.model',
+    #     custom_objects={'f1': train_3.f1})
 
     # get the data
     batch_size = 10
-    train_batches = 100
-    valid_batches = 30
-    epochs = 200
-    train_generator, validation_generator = train.get_generators(shape, batch_size)
+    classes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    print("classes array has length: " + str(len(classes)))
+    train_generator, validation_generator = train.get_generators(shape, batch_size, classes, validation_fraction=.2)
 
     x0, y0 = next(train_generator)
 
@@ -87,23 +74,22 @@ if __name__ == '__main__':
     print(y0)
 
     # make predictions
-    y = model.predict(x0)
+    # y = model.predict(x0)
 
     print("Predictions")
-    print(y)
-    print("Predictions shape: " + str(y.shape))
+    # print(y)
+    # print("Predictions shape: " + str(y.shape))
     print("True output shape: " + str(y0.shape))
     # print(model.summary())
     print()
 
-    for l in model.layers:
-        print(l.name)
+    # for l in model.layers:
+    #     print(l.name)
 
-    destination = root + "models/" + model_of_interest + "/"
-    if not os.path.isdir(destination):
-        os.mkdir(destination)
-    model.save(destination + "weights")
+    # destination = train.get_new_destination()
 
-    with open(destination + "model.json", "w") as json_file:
-        json_model = model.to_json()
-        json_file.write(json_model)
+    # model.save(destination + "weights")
+    #
+    # with open(destination + "model.json", "w") as json_file:
+    #     json_model = model.to_json()
+    #     json_file.write(json_model)
