@@ -512,7 +512,7 @@ def main():
     # train
     train_batches = 124
     valid_batches = 31
-    epochs = 40
+    epochs = 70
     class_weights = get_class_weights(load_local=False)
     # train_batches = 3
     # valid_batches = 3
