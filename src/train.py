@@ -494,7 +494,7 @@ def model13(lr, beta1, beta2, epsilon):
     return model, dm, predictions, "model13"
 
 
-def model14(classes):
+def model14(classes, learn_rate, beta1, beta2, epsilon):
     """
     vitoly byranchanooks model
     """
@@ -524,7 +524,7 @@ def model14(classes):
 
     # Difference
     model.compile(loss='binary_crossentropy',
-                  optimizer=Adam(.0001),
+                  optimizer=Adam(lr=learn_rate, beta_1=beta1, beta_2=beta2, epsilon=epsilon),
                   metrics=['acc', f1])
 
     return model, input_shape, classes, "model14"
@@ -600,6 +600,7 @@ def model16():
     """
     vitoly byranchanooks model, predicting only 14 classes
     """
+
     dm = 299
     channels = 3
     input_shape = (dm, dm, channels)
@@ -851,10 +852,15 @@ def main():
     # get data and a model
     batch_size = 10
 
+    learn_rate = .0001
+    beta_1 = .9
+    beta_2 = .999
+    epsilon = None
+
     classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
     classes = classes1 + classes2
-    model, input_shape, classes, model_name = model14(classes)
+    model, input_shape, classes, model_name = model14(classes, learn_rate, beta_1, beta_2, epsilon)
     print(classes)
     train_generator, validation_generator = get_generators(input_shape, batch_size,
                                                            classes=classes, validation_fraction=.2)
@@ -867,9 +873,9 @@ def main():
     time_callback = pearl_harbor.TimeHistory()
 
     # train
-    train_batches = 124
-    valid_batches = 31
-    epochs = 60
+    # train_batches = 124
+    # valid_batches = 31
+    # epochs = 60
     class_weights = get_class_weights(load_local=False)
     train_batches = 3
     valid_batches = 3
@@ -891,7 +897,8 @@ def main():
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
         write_csv(csv_file, stats, time_callback.times,
                   epochs=epochs, batch_size=batch_size, model_name=model_name, train_batches=train_batches,
-                  valid_batches=valid_batches)
+                  valid_batches=valid_batches, learn_rate=learn_rate, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon,
+                  notes="class_weights dictionary given to .fit_generator()")
 
     T_first = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,
          0.113, 0.387]
