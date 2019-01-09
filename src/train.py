@@ -495,7 +495,7 @@ def main():
     classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
     classes = classes1 + classes2
-    model, input_shape, classes, model_name = all_models.model18(classes,
+    model, input_shape, classes, model_name = all_models.model17(classes,
                                                                  learn_rate, beta_1, beta_2, epsilon,
                                                                  regularization)
     print(classes)
@@ -510,9 +510,9 @@ def main():
     time_callback = pearl_harbor.TimeHistory()
 
     # train
-    train_batches = 124
-    valid_batches = 31
-    epochs = 70
+    train_batches = 100
+    valid_batches = 20
+    epochs = 60
     class_weights = get_class_weights(load_local=False)
     # train_batches = 3
     # valid_batches = 3
