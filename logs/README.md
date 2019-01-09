@@ -257,7 +257,7 @@ I use a generator that caches images as they are loaded from the hard drive. (mo
 </figure>
 
 ### Notes
-I ran train_3.py on commit 0f5a56928677ef7f9
+I ran train_3.py on commit 0f5a56928677ef7f9, my optimizer was Adam(.0001), which means lr I think. All the others were default.
 
 ### Threshold
 I used this as the threshold:     T = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,

@@ -399,8 +399,8 @@ def write_csv(csv_file, train_history, epoch_time=None, **kwargs):
         spam_writer.writerow(["epoch_time"] + epoch_time)
 
     spam_writer.writerow([" ... "])
-    spam_writer.writerow(meta_info)
-    spam_writer.writerow(meta_values)
+    spam_writer.writerow(["parameter_names"] + meta_info)
+    spam_writer.writerow(["parameter_values"] + meta_values)
 
 
 def get_generators(shape, batch_size, classes, validation_fraction):
@@ -491,12 +491,13 @@ def main():
     beta_2 = .999
     epsilon = None
     regularization = .1
+    decay = 1e-5
 
     classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
     classes = classes1 + classes2
     model, input_shape, classes, model_name = all_models.model17(classes,
-                                                                 learn_rate, beta_1, beta_2, epsilon,
+                                                                 learn_rate, beta_1, beta_2, epsilon, decay,
                                                                  regularization)
     print(classes)
     train_generator, validation_generator = get_generators(input_shape, batch_size,
@@ -533,9 +534,8 @@ def main():
     # save stats
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
         write_csv(csv_file, stats, time_callback.times,
-                  epochs=epochs, batch_size=batch_size, model_name=model_name, train_batches=train_batches,
-                  valid_batches=valid_batches, learn_rate=learn_rate, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon,
-                  notes="first attempt with a smaller network")
+                  name=model_name, epochs=epochs, bs=batch_size, train_bats=train_batches,
+                  val_bats=valid_batches, lr=learn_rate, e=epsilon, decay=decay, r=regularization)
 
     T_first = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,
          0.113, 0.387]

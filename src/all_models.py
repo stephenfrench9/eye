@@ -270,10 +270,11 @@ def model13(lr, beta1, beta2, epsilon):
     return model, dm, predictions, "model13"
 
 
-def model14(classes, learn_rate, beta1, beta2, epsilon):
+def model14(classes, learn_rate, beta1, beta2, epsilon, regularizaton):
     """
     vitoly byranchanooks model
     """
+    assert(regularization is None)
     dm = 299
     predictions = 28
     channels = 3
@@ -409,7 +410,7 @@ def model16():
     return model, input_shape, n_out, "model16"
 
 
-def model17(classes, learn_rate, beta1, beta2, epsilon, regularization):
+def model17(classes, learn_rate, beta1, beta2, epsilon, decay, regularization):
     """
     vitoly byranchanooks model, with regularization, and proper batch normalization
     https://github.com/keras-team/keras/issues/1921
@@ -448,7 +449,7 @@ def model17(classes, learn_rate, beta1, beta2, epsilon, regularization):
 
     # Difference
     model.compile(loss='binary_crossentropy',
-                  optimizer=Adam(lr=learn_rate, beta_1=beta1, beta_2=beta2, epsilon=epsilon),
+                  optimizer=Adam(lr=learn_rate, beta_1=beta1, beta_2=beta2, epsilon=epsilon, decay=decay),
                   metrics=['acc', train.f1])
 
     return model, input_shape, classes, "model17"
