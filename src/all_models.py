@@ -23,8 +23,9 @@ from sklearn.model_selection import train_test_split
 
 from classification_models import ResNet18, ResNet34
 from keras import backend as K
+from keras.activations import relu, sigmoid
 from keras.regularizers import l2
-from keras.applications import InceptionResNetV2
+from keras.applications import InceptionResNetV2, InceptionV3
 from keras.layers import Dense, Dropout, Flatten, AveragePooling2D, Input, ReLU, Concatenate, Activation
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
 from keras.models import Sequential, model_from_json, Model
@@ -410,7 +411,8 @@ def model16():
 
 def model17(classes, learn_rate, beta1, beta2, epsilon, regularization):
     """
-    vitoly byranchanooks model, with weight_classes and regularization
+    vitoly byranchanooks model, with regularization, and proper batch normalization
+    https://github.com/keras-team/keras/issues/1921
     """
     dm = 299
     channels = 3
@@ -422,13 +424,23 @@ def model17(classes, learn_rate, beta1, beta2, epsilon, regularization):
 
     input_tensor = Input(shape=input_shape)
     bn = BatchNormalization()(input_tensor)
+
     x = pretrain_model(bn)
-    x = Conv2D(128, kernel_size=(1, 1), kernel_regularizer=l2(regularization), activation='relu')(x)
+    x = Conv2D(128, kernel_size=(1, 1), kernel_regularizer=l2(regularization))(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+
     x = Flatten()(x)
     x = Dropout(0.5)(x)
-    x = Dense(512, kernel_regularizer=l2(regularization), activation='relu')(x)
+    x = Dense(512, kernel_regularizer=l2(regularization))(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+
     x = Dropout(0.5)(x)
-    output = Dense(len(classes), kernel_regularizer=l2(regularization), activation='sigmoid')(x)
+    x = Dense(len(classes), kernel_regularizer=l2(regularization))(x)
+    x = BatchNormalization()(x)
+    output = Activation('sigmoid')(x)
+
     model = Model(input_tensor, output)
     # Difference
     # for layer in model.layers[0:3]:
@@ -440,3 +452,101 @@ def model17(classes, learn_rate, beta1, beta2, epsilon, regularization):
                   metrics=['acc', train.f1])
 
     return model, input_shape, classes, "model17"
+
+
+def model18(classes, learn_rate, beta1, beta2, epsilon, regularization):
+    """
+    vitoly byranchanooks model, with inceptionV3, with regularization, and proper batch normalization
+    https://github.com/keras-team/keras/issues/1921
+    """
+    dm = 299
+    channels = 3
+    input_shape = (dm, dm, channels)
+    pretrain_model = InceptionV3(
+        include_top=False,
+        weights='imagenet',
+        input_shape=input_shape)
+
+    input_tensor = Input(shape=input_shape)
+    bn = BatchNormalization()(input_tensor)
+    x = pretrain_model(bn)
+    x = Conv2D(128, kernel_size=(1, 1), kernel_regularizer=l2(regularization))(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+
+    x = Flatten()(x)
+    x = Dropout(0.5)(x)
+    x = Dense(512, kernel_regularizer=l2(regularization))(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+
+    x = Dropout(0.5)(x)
+    x = Dense(len(classes), kernel_regularizer=l2(regularization))(x)
+    x = BatchNormalization()(x)
+    output = Activation('sigmoid')(x)
+
+    model = Model(input_tensor, output)
+    # Difference
+    # for layer in model.layers[0:3]:
+    #     layer.trainable = False
+
+    # Difference
+    model.compile(loss='binary_crossentropy',
+                  optimizer=Adam(lr=learn_rate, beta_1=beta1, beta_2=beta2, epsilon=epsilon),
+                  metrics=['acc', train.f1])
+
+    return model, input_shape, classes, "model18"
+
+
+def model19(classes, learn_rate, beta1, beta2, epsilon, regularization):
+    """
+    play around with keras.applications
+    """
+    dm = 299
+    channels = 3
+    input_shape = (dm, dm, channels)
+    model = InceptionV3(
+        include_top=False,
+        weights='imagenet',
+        input_shape=input_shape)
+
+    # input_tensor = Input(shape=input_shape)
+    # bn = BatchNormalization()(input_tensor)
+    # x = pretrain_model(bn)
+    # x = Conv2D(128, kernel_size=(1, 1), kernel_regularizer=l2(regularization), activation='relu')(x)
+    # x = Flatten()(x)
+    # x = Dropout(0.5)(x)
+    # x = Dense(512, kernel_regularizer=l2(regularization), activation='relu')(x)
+    # x = Dropout(0.5)(x)
+    # output = Dense(len(classes), kernel_regularizer=l2(regularization), activation='sigmoid')(x)
+    # model = Model(input_tensor, output)
+    # Difference
+    # for layer in model.layers[0:3]:
+    #     layer.trainable = False
+
+    # Difference
+    model.compile(loss='binary_crossentropy',
+                  optimizer=Adam(lr=learn_rate, beta_1=beta1, beta_2=beta2, epsilon=epsilon),
+                  metrics=['acc', train.f1])
+
+    return model, input_shape, classes, "model19"
+
+
+if __name__ == '__main__':
+    batch_size = 10
+
+    learn_rate = .0001
+    beta_1 = .9
+    beta_2 = .999
+    epsilon = None
+    regularization = .1
+
+    classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+    classes = classes1 + classes2
+
+    modelN, i, c, n = model18(classes, learn_rate, beta_1, beta_2, epsilon, regularization)
+    print(n)
+    print(i)
+    print(c)
+    print(modelN.summary())
