@@ -512,9 +512,9 @@ def main():
     time_callback = pearl_harbor.TimeHistory()
 
     # train
-    train_batches = 100
+    train_batches = 50
     valid_batches = 20
-    epochs = 60
+    epochs = 12
     class_weights = get_class_weights(load_local=False)
     # train_batches = 3
     # valid_batches = 3
