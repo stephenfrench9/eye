@@ -1,3 +1,5 @@
+import math
+
 import pearl_harbor
 
 import csv
@@ -169,9 +171,8 @@ class ImageSequence(Sequence):
         return x, y
 
 
-def get_data():
-    train_labels = pd.read_csv(root + "train.csv")
-    labels = {
+def get_label_names():
+    label_names = {
         0: "Nucleoplasm",
         1: "Nuclear membrane",
         2: "Nucleoli",
@@ -201,6 +202,34 @@ def get_data():
         26: "Cytoplasmic bodies",
         27: "Rods & rings"
     }
+    return label_names
+
+
+def get_class_weights(load_local=False):
+    label_names = get_label_names()
+    reverse_train_labels = dict((v, k) for k, v in label_names.items())
+
+    if load_local:
+        train_labels = pd.read_pickle("./train_labels.pkl")
+    else:
+        train_labels = get_data()
+
+    target_counts = train_labels.drop(["Id", "Target"],axis=1).sum(axis=0).sort_values(ascending=False)
+
+    class_counts = {}
+    for i in target_counts.index:
+        class_counts[reverse_train_labels.get(i)] = target_counts[i]
+
+    class_weights = {}
+    for label, count in class_counts.items():
+        class_weights[label] = math.log(12885/count)+1
+
+    return class_weights
+
+
+def get_data():
+    train_labels = pd.read_csv(root + "train.csv")
+    labels = get_label_names()
 
     # reverse_train_labels = dict((v, k) for k, v in labels.items())
 
@@ -217,6 +246,7 @@ def get_data():
     train_labels = train_labels.apply(fill_targets, axis=1)
 
     return train_labels
+
 
 
 def f1(y_true, y_pred):
@@ -464,7 +494,7 @@ def model13(lr, beta1, beta2, epsilon):
     return model, dm, predictions, "model13"
 
 
-def model14():
+def model14(classes):
     """
     vitoly byranchanooks model
     """
@@ -497,7 +527,7 @@ def model14():
                   optimizer=Adam(.0001),
                   metrics=['acc', f1])
 
-    return model, input_shape, predictions, "model14"
+    return model, input_shape, classes, "model14"
 
 
 def model15():
@@ -785,9 +815,9 @@ def save_final_model(destination, model):
     model.save(destination + "weights")
 
 
-def make_predictions(destination, pred_name, model, shape, thresholds):
+def make_predictions(destination, pred_name, model, shape, classes, thresholds):
     submit = pd.read_csv('sample_submission.csv')
-
+    assert(len(classes) == len(thresholds))
     T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
          0.231, 0.363, 0.117, 0.0001]
 
@@ -801,8 +831,12 @@ def make_predictions(destination, pred_name, model, shape, thresholds):
         path = os.path.join('./test/', name)
         image = Data_Generator.load_image(path, shape)
         score_predict = model.predict(image[np.newaxis])[0]
-        label_predict = np.arange(14)[score_predict >= T]
+        label_predict = np.arange(len(classes))[score_predict >= T]
         str_predict_label = ' '.join(str(l) for l in label_predict)
+        # TODO: right now the string reports which indices of the model output are predicted to be true
+        # TODO: convert those model output indices to labels (ie in the range 0 to 27)
+        # TODO: usually the data generator is set up so that the model output indices are the labels
+        # TODO: The classes array encodes this, and is often representative of an identity operation
         predicted.append(str_predict_label)
 
     submit['Predicted'] = predicted
@@ -816,10 +850,14 @@ def main():
 
     # get data and a model
     batch_size = 10
-    model, shape, predictions, model_name = model16()
-    classes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-    classes = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
-    train_generator, validation_generator = get_generators(shape, batch_size, classes=classes, validation_fraction=.2)
+
+    classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+    classes = classes1 + classes2
+    model, input_shape, classes, model_name = model14(classes)
+    print(classes)
+    train_generator, validation_generator = get_generators(input_shape, batch_size,
+                                                           classes=classes, validation_fraction=.2)
     print(model.summary())
 
     # checkpoints
@@ -832,14 +870,17 @@ def main():
     train_batches = 124
     valid_batches = 31
     epochs = 60
-    # train_batches = 3
-    # valid_batches = 3
-    # epochs = 2
+    class_weights = get_class_weights(load_local=False)
+    train_batches = 3
+    valid_batches = 3
+    epochs = 2
+
     train_history = model.fit_generator(generator=train_generator,
                                         steps_per_epoch=train_batches,
                                         epochs=epochs,
                                         validation_data=validation_generator,
                                         validation_steps=valid_batches,
+                                        class_weight=class_weights,
                                         callbacks=[check_pointer, time_callback])
     stats = train_history.history
 
@@ -858,9 +899,11 @@ def main():
     T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
          0.231, 0.363, 0.117, 0.0001]
 
+    T_all = T_first + T_last
+
     # make predictions
     original = "original_submission.csv"
-    make_predictions(destination, original, model, shape, thresholds=T_last)
+    make_predictions(destination, original, model, input_shape, classes, thresholds=T_all)
 
 
 if __name__ == "__main__":

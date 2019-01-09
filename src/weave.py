@@ -6,7 +6,7 @@ if __name__ == '__main__':
     destination1 = "./" + "models/" + model1
     destination2 = "./" + "models/" + model2
 
-    f = open(destination1 + "submission.csv", 'r', newline='')
+    f = open(destination1 + "from_vload.csv", 'r', newline='')
     g = open(destination2 + "corrected_submission.csv", 'r', newline='')
     doc1 = csv.reader(f, delimiter=',')
     doc2 = csv.reader(g, delimiter=',')
@@ -33,33 +33,33 @@ if __name__ == '__main__':
     print(len(lines2))
 
     predicted = []
-    with open(destination1 + 'composite_results.csv', 'w', newline='') as csv_file:
-        spam_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        spam_writer.writerow(lines2[0])
-        for i in range(len(lines2)-1):
+    # with open(destination1 + 'composite_results.csv', 'w', newline='') as csv_file:
+    #     spam_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    #     spam_writer.writerow(lines2[0])
+    for i in range(len(lines2)-1):
 
-            a = lines2[i + 1][1]
-            b = a.split(' ')
-            if len(b) == 1 and b[0] == '':
-                q = 1
-            else:
-                b = [str(int(i)+14) for i in b]
-            b = ' '.join(b)
+        a = lines2[i + 1][1]
+        b = a.split(' ')
+        if len(b) == 1 and b[0] == '':
+            q = 1
+        else:
+            b = [str(int(i)+14) for i in b]
+        b = ' '.join(b)
 
-            if lines1[i+1][1] == '':
-                final_string = b
-            elif b == '':
-                final_string = lines1[i+1][1]
-            else:
-                final_string = lines1[i+1][1] + ' ' + b
+        if lines1[i+1][1] == '':
+            final_string = b
+        elif b == '':
+            final_string = lines1[i+1][1]
+        else:
+            final_string = lines1[i+1][1] + ' ' + b
 
-            print(final_string)
-            predicted.append(final_string)
+        print(final_string)
+        predicted.append(final_string)
 
     print(predicted)
     submit = pd.read_csv('sample_submission.csv')
     submit['Predicted'] = predicted
-    submit.to_csv(destination1 + 'submission_combined.csv', index=False)
+    submit.to_csv(destination1 + 'submission_combined_corrected.csv', index=False)
 
     f.close()
     g.close()
