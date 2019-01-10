@@ -85,7 +85,7 @@ if __name__ == '__main__':
     fullValGen = vg
 
     # level 3
-    destination = train.get_old_destination('10-18-18/')
+    destination = train.get_old_destination('10-5-51/')
     bestModel = load_model(destination + 'InceptionResNetV2.model', custom_objects={'f1': f1})  # , 'f1_loss': f1_loss})
 
     lastFullValPred = np.empty((0, 28))
