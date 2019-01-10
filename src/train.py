@@ -515,9 +515,9 @@ def main():
     time_callback = pearl_harbor.TimeHistory()
 
     # train
-    train_batches = 1
-    valid_batches = 1
-    epochs = 2
+    train_batches = 50
+    valid_batches = 20
+    epochs = 20
     class_weights = get_class_weights(load_local=False)
     # train_batches = 3
     # valid_batches = 3
@@ -551,7 +551,7 @@ def main():
 
     # make predictions
     original = "original_submission.csv"
-    make_predictions(destination, original, model, input_shape, classes, thresholds=T_all)
+    # make_predictions(destination, original, model, input_shape, classes, thresholds=T_all)
 
 
 if __name__ == "__main__":
