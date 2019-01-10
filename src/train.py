@@ -492,18 +492,18 @@ def main():
     # get data and a model
     batch_size = 10
 
-    learn_rate = .0001
+    learn_rate = .1
     beta_1 = .9
     beta_2 = .999
     epsilon = None
     regularization = None
-    decay = 0
+    decay = 1e-4
 
     classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
     classes = classes1 + classes2
 
-    model, input_shape, classes, model_name = all_models.model15(classes, learn_rate)
+    model, input_shape, classes, model_name = all_models.model15(classes, learn_rate, decay)
                                                                  # learn_rate, beta_1, beta_2, epsilon, decay,
                                                                  # regularization)
     print(classes)
@@ -521,7 +521,7 @@ def main():
     train_batches = 100
     valid_batches = 20
     epochs = 110
-    class_weights = get_class_weights(soft=True, load_local=False)
+    class_weights = get_class_weights(soft=False, load_local=False)
     # train_batches = 3
     # valid_batches = 3
     # epochs = 2

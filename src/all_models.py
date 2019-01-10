@@ -307,7 +307,7 @@ def model14(classes, learn_rate, beta1, beta2, epsilon, decay, regularization):
     return model, input_shape, classes, "model14"
 
 
-def model15(classes, lr):
+def model15(classes, lr, decay):
     """
     michal haltuf's model
     https://www.kaggle.com/rejpalcz/cnn-128x128x4-keras-from-scratch-lb-0-328
@@ -369,7 +369,7 @@ def model15(classes, lr):
 
     model = Model(init, x)
 
-    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=lr), metrics=['acc', train.f1])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=lr, decay=decay), metrics=['acc', train.f1])
 
     return model, input_shape, classes, "model15"
 
