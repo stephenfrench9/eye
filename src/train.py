@@ -492,7 +492,7 @@ def main():
     learn_rate = .0001
     beta_1 = .9
     beta_2 = .999
-    epsilon = 0
+    epsilon = None
     regularization = None
     decay = 0
 
@@ -500,7 +500,7 @@ def main():
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
     classes = classes1 + classes2
 
-    model, input_shape, classes, model_name = all_models.model17(classes,
+    model, input_shape, classes, model_name = all_models.model14(classes,
                                                                  learn_rate, beta_1, beta_2, epsilon, decay,
                                                                  regularization)
     print(classes)
