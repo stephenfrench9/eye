@@ -490,14 +490,14 @@ def main():
     beta_1 = .9
     beta_2 = .999
     epsilon = None
-    regularization = .1
+    regularization = None
     decay = 0
-
 
     classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
     classes = classes1 + classes2
-    model, input_shape, classes, model_name = all_models.model17(classes,
+
+    model, input_shape, classes, model_name = all_models.model14(classes,
                                                                  learn_rate, beta_1, beta_2, epsilon, decay,
                                                                  regularization)
     print(classes)

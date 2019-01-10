@@ -270,7 +270,7 @@ def model13(lr, beta1, beta2, epsilon):
     return model, dm, predictions, "model13"
 
 
-def model14(classes, learn_rate, beta1, beta2, epsilon, regularizaton):
+def model14(classes, learn_rate, beta1, beta2, epsilon, decay, regularizaton):
     """
     vitoly byranchanooks model
     """
@@ -301,7 +301,7 @@ def model14(classes, learn_rate, beta1, beta2, epsilon, regularizaton):
 
     # Difference
     model.compile(loss='binary_crossentropy',
-                  optimizer=Adam(lr=learn_rate, beta_1=beta1, beta_2=beta2, epsilon=epsilon),
+                  optimizer=Adam(lr=learn_rate, beta_1=beta1, beta_2=beta2, epsilon=epsilon, decay=decay),
                   metrics=['acc', train.f1])
 
     return model, input_shape, classes, "model14"
