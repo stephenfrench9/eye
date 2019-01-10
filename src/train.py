@@ -508,7 +508,7 @@ def main():
                                                                  # learn_rate, beta_1, beta_2, epsilon, decay,
                                                                  # regularization)
 
-    model_of_interest = "10-9-12"
+    model_of_interest = "10-9-12/"
     model = load_model(
         root + 'models/' + model_of_interest + 'InceptionResNetV2.model',
         custom_objects={'f1': f1})
