@@ -490,14 +490,14 @@ def main():
     destination = get_new_destination()
 
     # get data and a model
-    batch_size = 10
+    batch_size = 128
 
-    learn_rate = .1
+    learn_rate = .001
     beta_1 = .9
     beta_2 = .999
     epsilon = None
     regularization = None
-    decay = 1e-4
+    decay = 0
 
     classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
@@ -518,10 +518,10 @@ def main():
     time_callback = pearl_harbor.TimeHistory()
 
     # train
-    train_batches = 100
+    train_batches = 219
     valid_batches = 20
-    epochs = 110
-    class_weights = get_class_weights(soft=False, load_local=False)
+    epochs = 30
+    # class_weights = get_class_weights(soft=False, load_local=False)
     # train_batches = 3
     # valid_batches = 3
     # epochs = 2
@@ -531,7 +531,6 @@ def main():
                                         epochs=epochs,
                                         validation_data=validation_generator,
                                         validation_steps=valid_batches,
-                                        class_weight=class_weights,
                                         callbacks=[check_pointer, time_callback])
     stats = train_history.history
 

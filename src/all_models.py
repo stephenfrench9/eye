@@ -369,7 +369,7 @@ def model15(classes, lr, decay):
 
     model = Model(init, x)
 
-    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=lr, decay=decay), metrics=['acc', train.f1])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(1e-03), metrics=['acc', train.f1])
 
     return model, input_shape, classes, "model15"
 
