@@ -223,7 +223,7 @@ def get_class_weights(load_local=False):
 
     class_weights = {}
     for label, count in class_counts.items():
-        class_weights[label] = math.log(12885/count)+1
+        class_weights[label] = math.log10(12885/count)+1
 
     return class_weights
 
@@ -489,10 +489,10 @@ def main():
     # get data and a model
     batch_size = 10
 
-    learn_rate = .01
+    learn_rate = .0001
     beta_1 = .9
     beta_2 = .999
-    epsilon = .5
+    epsilon = 0
     regularization = None
     decay = 0
 
@@ -500,7 +500,7 @@ def main():
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
     classes = classes1 + classes2
 
-    model, input_shape, classes, model_name = all_models.model14(classes,
+    model, input_shape, classes, model_name = all_models.model17(classes,
                                                                  learn_rate, beta_1, beta_2, epsilon, decay,
                                                                  regularization)
     print(classes)
@@ -515,9 +515,9 @@ def main():
     time_callback = pearl_harbor.TimeHistory()
 
     # train
-    train_batches = 50
+    train_batches = 100
     valid_batches = 20
-    epochs = 20
+    epochs = 80
     class_weights = get_class_weights(load_local=False)
     # train_batches = 3
     # valid_batches = 3
@@ -551,7 +551,7 @@ def main():
 
     # make predictions
     original = "original_submission.csv"
-    # make_predictions(destination, original, model, input_shape, classes, thresholds=T_all)
+    make_predictions(destination, original, model, input_shape, classes, thresholds=T_all)
 
 
 if __name__ == "__main__":

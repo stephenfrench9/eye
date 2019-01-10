@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     root = "./"
 
-    model_of_interest = "9-9-23/"
+    model_of_interest = "10-2-9/"
 
     print("graph eggs is running")
 
@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
         for row in rows:
             x = [i + 1 for i in range(len(row[1:]))]
-            first_e = 5
+            first_e = 0
             x = x[first_e:]
             if row[0] == "loss":
                 # plt.plot(x, [float(i) / float(row[1]) for i in row[1:]], 'r')
@@ -29,6 +29,15 @@ if __name__ == '__main__':
                 new_row = [round(float(i), 2) for i in row[1:]]
                 new_row = new_row[first_e:]
                 plt.plot(x, new_row, 'g')
+            elif row[0] == "val_acc":
+                new_row = [round(float(i), 2) for i in row[1:]]
+                new_row = new_row[first_e:]
+                plt.plot(x, new_row, 'y')
+            elif row[0] == "acc":
+                new_row = [round(float(i), 2) for i in row[1:]]
+                new_row = new_row[first_e:]
+                plt.plot(x, new_row, 'k')
+
             # elif row[0] == "pred_1":
             #     plt.plot(x, [float(i) for i in row[1:]], 'y')
             # elif row[0] == "act_1":
@@ -58,8 +67,18 @@ if __name__ == '__main__':
                     training_header[8], training_values[8])
 
 
+        plt.figure(1)
         plt.ylabel("normalized loss")
-        plt.xlabel("epoch : train=red, validation=blue, val_f1=green")
+        plt.xlabel("epoch : loss=red, acc=black, val_loss=blue, val_acc=yellow, val_f1=green")
         # plt.xticks(x)
         plt.title(training_values[0] + " (" + model_of_interest + ") " + training_info_1 + "\n" + training_info_2)
         plt.savefig(root + "models/" + model_of_interest + "training_session.png")
+
+        # plt.figure(2)
+        plt.ylabel("normalized loss")
+        plt.ylim([0, 1])
+        plt.xlabel("epoch : loss=red, acc=black, val_loss=blue, val_acc=yellow, val_f1=green")
+        # plt.xticks(x)
+        plt.title(training_values[0] + " (" + model_of_interest + ") " + training_info_1 + "\n" + training_info_2)
+        plt.savefig(root + "models/" + model_of_interest + "training_session_1.png")
+
