@@ -398,9 +398,12 @@ def write_csv(csv_file, train_history, epoch_time=None, **kwargs):
     if epoch_time is not None:
         spam_writer.writerow(["epoch_time"] + epoch_time)
 
+    print(type(meta_info))
+    print(meta_info)
+
     spam_writer.writerow([" ... "])
-    spam_writer.writerow(["parameter_names"] + meta_info)
-    spam_writer.writerow(["parameter_values"] + meta_values)
+    spam_writer.writerow(["parameter_names"] + list(meta_info))
+    spam_writer.writerow(["parameter_values"] + list(meta_values))
 
 
 def get_generators(shape, batch_size, classes, validation_fraction):
@@ -512,9 +515,9 @@ def main():
     time_callback = pearl_harbor.TimeHistory()
 
     # train
-    train_batches = 50
-    valid_batches = 20
-    epochs = 12
+    train_batches = 1
+    valid_batches = 1
+    epochs = 2
     class_weights = get_class_weights(load_local=False)
     # train_batches = 3
     # valid_batches = 3
@@ -534,7 +537,7 @@ def main():
 
     # save stats
     with open(destination + 'training_session.csv', 'w', newline='') as csv_file:
-        write_csv(csv_file, stats, time_callback.times,
+        write_csv(csv_file, stats, epoch_time=time_callback.times,
                   name=model_name, epochs=epochs, bs=batch_size, train_bats=train_batches,
                   val_bats=valid_batches, lr=learn_rate, e=epsilon, decay=decay, r=regularization)
 

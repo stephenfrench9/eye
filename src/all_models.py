@@ -270,7 +270,7 @@ def model13(lr, beta1, beta2, epsilon):
     return model, dm, predictions, "model13"
 
 
-def model14(classes, learn_rate, beta1, beta2, epsilon, decay, regularizaton):
+def model14(classes, learn_rate, beta1, beta2, epsilon, decay, regularization):
     """
     vitoly byranchanooks model
     """
