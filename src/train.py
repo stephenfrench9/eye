@@ -223,7 +223,7 @@ def get_class_weights(load_local=False):
 
     class_weights = {}
     for label, count in class_counts.items():
-        class_weights[label] = math.log(12885/count)+1
+        class_weights[label] = math.log10(12885/count)+1
 
     return class_weights
 
@@ -486,12 +486,12 @@ def main():
     # get data and a model
     batch_size = 10
 
-    learn_rate = .01
+    learn_rate = .0001
     beta_1 = .9
     beta_2 = .999
     epsilon = None
     regularization = .1
-    decay = 1e-5
+    decay = 0
 
 
     classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
