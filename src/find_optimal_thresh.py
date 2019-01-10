@@ -71,7 +71,7 @@ def getTestDataset():
 if __name__ == '__main__':
     root = './'
     BATCH_SIZE = 128
-    SHAPE = (299, 299, 3)
+    SHAPE = (192, 192, 3)
     VAL_RATIO = 0.1
 
     # level 5
