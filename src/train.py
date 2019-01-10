@@ -489,7 +489,7 @@ def main():
     # get data and a model
     batch_size = 10
 
-    learn_rate = .0001
+    learn_rate = .01
     beta_1 = .9
     beta_2 = .999
     epsilon = .5
