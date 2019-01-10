@@ -12,7 +12,10 @@ import train
 
 if __name__ == "__main__":
     root = "./"
-    model_of_interest = "10-2-9/"
+    # model_of_interest = "10-1-53/"
+    # model_of_interest = "10-1-58/"
+    model_of_interest = "10-2-2/"
+
     print("histo")
 
     f = open(root + "models/" + model_of_interest + "training_session.csv", 'r', newline='')

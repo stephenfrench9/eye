@@ -206,7 +206,7 @@ def get_label_names():
     return label_names
 
 
-def get_class_weights(load_local=False):
+def get_class_weights(soft=True, load_local=False):
     label_names = get_label_names()
     reverse_train_labels = dict((v, k) for k, v in label_names.items())
 
@@ -223,7 +223,10 @@ def get_class_weights(load_local=False):
 
     class_weights = {}
     for label, count in class_counts.items():
-        class_weights[label] = math.log10(12885/count)+1
+        if soft:
+            class_weights[label] = math.log10(12885/count)+1
+        else:
+            class_weights[label] = math.log(12885/count)+1
 
     return class_weights
 
@@ -500,9 +503,9 @@ def main():
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
     classes = classes1 + classes2
 
-    model, input_shape, classes, model_name = all_models.model14(classes,
-                                                                 learn_rate, beta_1, beta_2, epsilon, decay,
-                                                                 regularization)
+    model, input_shape, classes, model_name = all_models.model15(classes, learn_rate)
+                                                                 # learn_rate, beta_1, beta_2, epsilon, decay,
+                                                                 # regularization)
     print(classes)
     train_generator, validation_generator = get_generators(input_shape, batch_size,
                                                            classes=classes, validation_fraction=.2)
@@ -517,8 +520,8 @@ def main():
     # train
     train_batches = 100
     valid_batches = 20
-    epochs = 80
-    class_weights = get_class_weights(load_local=False)
+    epochs = 160
+    class_weights = get_class_weights(soft=True, load_local=False)
     # train_batches = 3
     # valid_batches = 3
     # epochs = 2

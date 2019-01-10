@@ -307,7 +307,7 @@ def model14(classes, learn_rate, beta1, beta2, epsilon, decay, regularization):
     return model, input_shape, classes, "model14"
 
 
-def model15():
+def model15(classes, lr):
     """
     michal haltuf's model
     https://www.kaggle.com/rejpalcz/cnn-128x128x4-keras-from-scratch-lb-0-328
@@ -316,7 +316,7 @@ def model15():
     channels = 3
     input_shape = (dm, dm, channels)
     dropRate = 0.25
-    predictions = 14
+    predictions = len(classes)
 
     init = Input(input_shape)
     x = BatchNormalization(axis=-1)(init)
@@ -369,9 +369,9 @@ def model15():
 
     model = Model(init, x)
 
-    model.compile(loss='binary_crossentropy', optimizer=Adam(.0001), metrics=['acc', train.f1])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=lr), metrics=['acc', train.f1])
 
-    return model, input_shape, predictions, "model15"
+    return model, input_shape, classes, "model15"
 
 
 def model16():
