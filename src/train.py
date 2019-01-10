@@ -489,12 +489,12 @@ def main():
     # get data and a model
     batch_size = 10
 
-    learn_rate = .01
+    learn_rate = .0001
     beta_1 = .9
     beta_2 = .999
-    epsilon = None
+    epsilon = .5
     regularization = None
-    decay = 1e-5
+    decay = 0
 
     classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
