@@ -23,6 +23,7 @@ from sklearn.model_selection import train_test_split
 from classification_models import ResNet18, ResNet34
 from keras import backend as K
 from keras.regularizers import l2
+from keras.engine.saving import load_model
 from keras.applications import InceptionResNetV2
 from keras.layers import Dense, Dropout, Flatten, AveragePooling2D, Input, ReLU, Concatenate, Activation
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
@@ -506,6 +507,14 @@ def main():
     model, input_shape, classes, model_name = all_models.model15(classes, learn_rate, decay)
                                                                  # learn_rate, beta_1, beta_2, epsilon, decay,
                                                                  # regularization)
+
+    model_of_interest = "10-9-12"
+    model = load_model(
+        root + 'models/' + model_of_interest + 'InceptionResNetV2.model',
+        custom_objects={'f1': f1})
+
+
+
     print(classes)
     train_generator, validation_generator = get_generators(input_shape, batch_size,
                                                            classes=classes, validation_fraction=.2)
@@ -520,7 +529,7 @@ def main():
     # train
     train_batches = 100
     valid_batches = 20
-    epochs = 8
+    epochs = 12
     # class_weights = get_class_weights(soft=False, load_local=False)
     # train_batches = 3
     # valid_batches = 3

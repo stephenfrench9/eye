@@ -32,8 +32,6 @@ if __name__ == "__main__":
 
     reg_string = "{0}={1}".format(training_header[-1], training_values[-1])
 
-
-
     # model = train.standard_load_model(model_of_interest)
 
     # I want to see the weights list for each layer
