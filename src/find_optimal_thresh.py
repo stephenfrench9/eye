@@ -71,7 +71,7 @@ def getTestDataset():
 if __name__ == '__main__':
     root = './'
     BATCH_SIZE = 128
-    SHAPE = (192, 192, 3)
+    SHAPE = (299, 299, 3)
     VAL_RATIO = 0.1
 
     # level 5
@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     lastFullValPred = np.empty((0, 28))
     lastFullValLabels = np.empty((0, 28))
-    for i in tqdm(range(20)):
+    for i in tqdm(range(40)):
         im, lbl = next(vg)
         scores = bestModel.predict(im)
         lastFullValPred = np.append(lastFullValPred, scores, axis=0)
