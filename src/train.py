@@ -86,6 +86,9 @@ class Data_Generator:
 
         return image_aug
 
+    def __len__(self):
+        return 20
+
 
 class ImageSequence(Sequence):
 
