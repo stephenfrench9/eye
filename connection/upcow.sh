@@ -1,0 +1,1 @@
+scp -i awsKey.pem cow.sh ec2-user@$(cat publicname.txt):/home/ec2-user/

@@ -116,12 +116,6 @@ But the search results were promising for these parameters. When we trained to f
 
 We see an improved validation loss, but the performance is poor. Recall is .62 and Precision is .87.
 
-## Model 9 - pretrained model
-
-### Search
-
-### Train
-
 ## Model 12 - Resnet18, with pretrained weights (training session 15-12-12/)
 
 ### Train
@@ -280,18 +274,36 @@ It is import to compare training session 31-9-1/ with training session 3-6-57/. 
 
 The conclusion: augmentation improves score considerably. Caching does not cause a speedup. Thresholding has a significant impact on score. 
 
-# Model16 , two instances predict 14 labels each
+# Model16 , predict first 14 labels (training session 7-3-59/), predict the last 14 labels (training session 7-4-58)
+ 
+### train
+During training session 7-3-59/, I load all images into ram and then train. The total training time is about 12 hours. For training session 7-4-58/, I read and write images from disk as they are required. The total training time is about 12 hours. The methods are equivalent.
+
+<figure>
+<img src="./readmePics/7-3-59/training_session.png" alt="train_ses" width="300"/><img src="./readmePics/7-4-58/training_session.png" alt="weights" width="300"/>	<figcaption>Figure 99: loss and validation curves for training models to fit only 14 classes at a time<figcaption/>
+</figure>
 
 
-# Model17, predict 14 classes at a time with frozen model14 as the top.
-Model 16 uses model instance 3-6-57/ as an initialization for the 'top' of the model, and then utlizes a new, randomly initialized suffix. The top of the model is frozen, and only the suffix (with about 200,000 weights is show) Here is the model summary: note that resnetlayer is the layer from model 14 instance 3-6-57/. 
+### Threshold
+I used this as the threshold:T = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125, 0.113, 0.387, 0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255, 0.231, 0.363, 0.117, 0]
 
-	summ
-	summ
-	summ
-	summ
+### Performance
 
-I use the vitoly generator with augmentation, and I train on 60,000 images (see each image about 3 times). The train time is * hours, giving a training speed of *. 
+This model achieves a raw performance score of .2 (the first half gets .13 points and then the second half gets .07 points.)
+
+
+# Model18, smaller network (9-9-23/)
+I use a smaller model this time. I use the InceptionV3, it is roughly half the size of the V2 network. 
+
+### train
+
+<figure>
+<img src="9-9-23-training_session.png" alt="train_ses" width="300"/> <img src="9-9-23-weights.png" alt="weights" width="300"/>	<figcaption>Figure 99: loss and validation curves, weights for model<figcaption/>
+</figure>
+
+<figure>
+<img src="9-9-23-suffix_weights.png" alt="train_ses" width="300"/>	<figcaption>Figure 99: Weight distribution of the suffix portion of the model<figcaption/>
+</figure>
 
 ### Notes
 train.py run on commit
@@ -303,6 +315,6 @@ I used this as the threshold:     T = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129,
 
 ### Performance
 
-This model achieves a raw performance score of .305
+This model achieves a raw performance score of .12, substantially worse than the larger model
 
 

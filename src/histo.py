@@ -14,7 +14,7 @@ if __name__ == "__main__":
     root = "./"
     # model_of_interest = "10-1-53/"
     # model_of_interest = "10-1-58/"
-    model_of_interest = "10-2-2/"
+    model_of_interest = "7-3-59/"
 
     print("histo")
 
