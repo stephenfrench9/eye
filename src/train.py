@@ -1,42 +1,68 @@
-import math
-
+# local packages
 import all_models
 import pearl_harbor
 
+#3rd party packages and Python Standard Library
 import csv
-import datetime
-
 import cv2
-import keras
+import datetime
 import keras.backend as k
-import tensorflow as tf
-import os
+import math
 import numpy as np
+import os
 import pandas as pd
+import tensorflow as tf
 import warnings
 
-from PIL import Image
 from imgaug import augmenters as iaa
 from keras.callbacks import ModelCheckpoint
-from sklearn.model_selection import train_test_split
-
-from classification_models import ResNet18, ResNet34
 from keras import backend as K
-from keras.regularizers import l2
 from keras.engine.saving import load_model
-from keras.applications import InceptionResNetV2
-from keras.layers import Dense, Dropout, Flatten, AveragePooling2D, Input, ReLU, Concatenate, Activation
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras.models import Sequential, model_from_json, Model
-from keras.optimizers import SGD, Adam
+from keras.models import model_from_json
 from keras.utils import Sequence
+from PIL import Image
 from scipy.misc import imread
 from skimage.io import imread
+from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 root = "./"
+
+
+def get_label_names():
+    label_names = {
+        0: "Nucleoplasm",
+        1: "Nuclear membrane",
+        2: "Nucleoli",
+        3: "Nucleoli fibrillar center",
+        4: "Nuclear speckles",
+        5: "Nuclear bodies",
+        6: "Endoplasmic reticulum",
+        7: "Golgi apparatus",
+        8: "Peroxisomes",
+        9: "Endosomes",
+        10: "Lysosomes",
+        11: "Intermediate filaments",
+        12: "Actin filaments",
+        13: "Focal adhesion sites",
+        14: "Microtubules",
+        15: "Microtubule ends",
+        16: "Cytokinetic bridge",
+        17: "Mitotic spindle",
+        18: "Microtubule organizing center",
+        19: "Centrosome",
+        20: "Lipid droplets",
+        21: "Plasma membrane",
+        22: "Cell junctions",
+        23: "Mitochondria",
+        24: "Aggresome",
+        25: "Cytosol",
+        26: "Cytoplasmic bodies",
+        27: "Rods & rings"
+    }
+    return label_names
 
 
 class Data_Generator:
@@ -105,36 +131,7 @@ class ImageSequence(Sequence):
         self.prediction_start = prediction_start
         self.predictions = predictions
         self.channels = channels
-        self.labels = {
-            0: "Nucleoplasm",
-            1: "Nuclear membrane",
-            2: "Nucleoli",
-            3: "Nucleoli fibrillar center",
-            4: "Nuclear speckles",
-            5: "Nuclear bodies",
-            6: "Endoplasmic reticulum",
-            7: "Golgi apparatus",
-            8: "Peroxisomes",
-            9: "Endosomes",
-            10: "Lysosomes",
-            11: "Intermediate filaments",
-            12: "Actin filaments",
-            13: "Focal adhesion sites",
-            14: "Microtubules",
-            15: "Microtubule ends",
-            16: "Cytokinetic bridge",
-            17: "Mitotic spindle",
-            18: "Microtubule organizing center",
-            19: "Centrosome",
-            20: "Lipid droplets",
-            21: "Plasma membrane",
-            22: "Cell junctions",
-            23: "Mitochondria",
-            24: "Aggresome",
-            25: "Cytosol",
-            26: "Cytoplasmic bodies",
-            27: "Rods & rings"
-        }
+        self.labels = get_label_names()
 
     def __len__(self):
         return int(np.ceil((len(self.train_labels)) / float(self.batch_size))) - 1
@@ -176,40 +173,6 @@ class ImageSequence(Sequence):
         return x, y
 
 
-def get_label_names():
-    label_names = {
-        0: "Nucleoplasm",
-        1: "Nuclear membrane",
-        2: "Nucleoli",
-        3: "Nucleoli fibrillar center",
-        4: "Nuclear speckles",
-        5: "Nuclear bodies",
-        6: "Endoplasmic reticulum",
-        7: "Golgi apparatus",
-        8: "Peroxisomes",
-        9: "Endosomes",
-        10: "Lysosomes",
-        11: "Intermediate filaments",
-        12: "Actin filaments",
-        13: "Focal adhesion sites",
-        14: "Microtubules",
-        15: "Microtubule ends",
-        16: "Cytokinetic bridge",
-        17: "Mitotic spindle",
-        18: "Microtubule organizing center",
-        19: "Centrosome",
-        20: "Lipid droplets",
-        21: "Plasma membrane",
-        22: "Cell junctions",
-        23: "Mitochondria",
-        24: "Aggresome",
-        25: "Cytosol",
-        26: "Cytoplasmic bodies",
-        27: "Rods & rings"
-    }
-    return label_names
-
-
 def get_class_weights(soft=True, load_local=False):
     label_names = get_label_names()
     reverse_train_labels = dict((v, k) for k, v in label_names.items())
@@ -219,7 +182,7 @@ def get_class_weights(soft=True, load_local=False):
     else:
         train_labels = get_data()
 
-    target_counts = train_labels.drop(["Id", "Target"],axis=1).sum(axis=0).sort_values(ascending=False)
+    target_counts = train_labels.drop(["Id", "Target"], axis=1).sum(axis=0).sort_values(ascending=False)
 
     class_counts = {}
     for i in target_counts.index:
@@ -228,9 +191,9 @@ def get_class_weights(soft=True, load_local=False):
     class_weights = {}
     for label, count in class_counts.items():
         if soft:
-            class_weights[label] = math.log10(12885/count)+1
+            class_weights[label] = math.log10(12885 / count) + 1
         else:
-            class_weights[label] = math.log(12885/count)+1
+            class_weights[label] = math.log(12885 / count) + 1
 
     return class_weights
 
@@ -256,7 +219,6 @@ def get_data():
     return train_labels
 
 
-
 def f1(y_true, y_pred):
     tp = K.sum(K.cast(y_true * y_pred, 'float'), axis=0)
     fp = K.sum(K.cast((1 - y_true) * y_pred, 'float'), axis=0)
@@ -269,11 +231,6 @@ def f1(y_true, y_pred):
     f1 = tf.where(tf.is_nan(f1), tf.zeros_like(f1), f1)
     return K.mean(f1)
 
-# TODO: make models.py
-
-
-
-# TODO: move to predict.py
 
 def standard_load_model(model):
     """
@@ -330,11 +287,9 @@ def precision_metric(y_true, y_pred):
     return precision
 
 
-# TODO: add optional arguments to write_csv so that it can handle different sets of hyper-parameters for diff models
-
 def write_csv_depracated(csv_file, train_history,
-              train_batch_size, train_batches, valid_batch_size, valid_batches, model_name,
-              lr, beta1, beta2, epsilon):
+                         train_batch_size, train_batches, valid_batch_size, valid_batches, model_name,
+                         lr, beta1, beta2, epsilon):
     head = ['type', 'epoch 1', 'epoch 2', ' ... ']
     spam_writer = csv.writer(csv_file, delimiter=';',
                              quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -414,11 +369,8 @@ def write_csv(csv_file, train_history, epoch_time=None, **kwargs):
 
 
 def get_generators(shape, batch_size, classes, validation_fraction):
-    # get raw data (put addresses and labels into a list)
-
     path_to_train = root + 'train/'
     data = pd.read_csv(root + 'train.csv')
-
 
     train_dataset_info = []
     for name, labels in zip(data['Id'], data['Target'].str.split(' ')):
@@ -461,13 +413,14 @@ def save_final_model(destination, model):
 
 
 def make_predictions(destination, pred_name, model, shape, classes, thresholds):
+    assert (len(classes) == len(thresholds))
+
     submit = pd.read_csv('sample_submission.csv')
-    assert(len(classes) == len(thresholds))
     T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
-         0.231, 0.363, 0.117, 0.0001]
+              0.231, 0.363, 0.117, 0.0001]
 
     T_first = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,
-         0.113, 0.387]
+               0.113, 0.387]
 
     T = np.array(thresholds)
 
@@ -489,13 +442,12 @@ def make_predictions(destination, pred_name, model, shape, classes, thresholds):
 
 
 def main():
-    # TODO: build a configuration file
-    # save stuff
+    # initialize directory for this training session
     destination = get_new_destination()
 
-    # get data and a model
+    # TODO: build a configuration file
+    # Set training hyperparameters
     batch_size = 128
-
     learn_rate = .001
     beta_1 = .9
     beta_2 = .999
@@ -503,26 +455,22 @@ def main():
     regularization = None
     decay = 0
 
+    # name classes to predict
     classes1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     classes2 = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
     classes = classes1 + classes2
 
+    # get a model
     model, input_shape, classes, model_name = all_models.model15(classes, learn_rate, decay)
-                                                                 # learn_rate, beta_1, beta_2, epsilon, decay,
-                                                                 # regularization)
 
     model_of_interest = "10-9-12/"
     model = load_model(
         root + 'models/' + model_of_interest + 'InceptionResNetV2.model',
         custom_objects={'f1': f1})
 
-
-
-    print(classes)
+    # get data
     train_generator, validation_generator = get_generators(input_shape, batch_size,
                                                            classes=classes, validation_fraction=.2)
-    print(model.summary())
-
     # checkpoints
     check_pointer = ModelCheckpoint(
         destination + 'InceptionResNetV2.model',
@@ -534,10 +482,6 @@ def main():
     valid_batches = 20
     epochs = 12
     # class_weights = get_class_weights(soft=False, load_local=False)
-    # train_batches = 3
-    # valid_batches = 3
-    # epochs = 2
-
     train_history = model.fit_generator(generator=train_generator,
                                         steps_per_epoch=train_batches,
                                         epochs=epochs,
@@ -556,10 +500,10 @@ def main():
                   val_bats=valid_batches, lr=learn_rate, e=epsilon, decay=decay, r=regularization)
 
     T_first = [0.407, 0.441, 0.161, 0.145, 0.299, 0.129, 0.25, 0.414, 0.01, 0.028, 0.021, 0.125,
-         0.113, 0.387]
+               0.113, 0.387]
 
     T_last = [0.602, 0.001, 0.137, 0.199, 0.176, 0.25, 0.095, 0.29, 0.159, 0.255,
-         0.231, 0.363, 0.117, 0.0001]
+              0.231, 0.363, 0.117, 0.0001]
 
     T_all = T_first + T_last
 
@@ -571,5 +515,3 @@ def main():
 if __name__ == "__main__":
     # TODO: add argparse for naming of the model, and to instruct users how to use train.py
     main()
-
-

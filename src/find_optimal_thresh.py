@@ -1,44 +1,17 @@
-from imgaug import augmenters as iaa
 from keras import backend as K
 from keras.engine.saving import load_model
-from PIL import Image
 from sklearn.metrics import f1_score as off1
 from tqdm import tqdm
 
-import cv2
-import keras
 import numpy as np
-import os
-import pandas as pd
 import tensorflow as tf
-
 import train
 
-THRESHOLD = 0.05
-
-def dgetTrainDataset():
-    DIR = './'
-    path_to_train = DIR + 'train/'
-    data = pd.read_csv(DIR + 'train.csv')
-
-    paths = []
-    labels = []
-
-    for name, lbl in zip(data['Id'], data['Target'].str.split(' ')):
-        y = np.zeros(28)
-        for key in lbl:
-            y[int(key)] = 1
-        paths.append(os.path.join(path_to_train, name))
-        labels.append(y)
-
-    return np.array(paths), np.array(labels)
-
 # level 3
-
-
 def f1(y_true, y_pred):
-    #y_pred = K.round(y_pred)
-    y_pred = K.cast(K.greater(K.clip(y_pred, 0, 1), THRESHOLD), K.floatx())
+    threshold = 0.05
+
+    y_pred = K.cast(K.greater(K.clip(y_pred, 0, 1), threshold), K.floatx())
     tp = K.sum(K.cast(y_true*y_pred, 'float'), axis=0)
     tn = K.sum(K.cast((1-y_true)*(1-y_pred), 'float'), axis=0)
     fp = K.sum(K.cast((1-y_true)*y_pred, 'float'), axis=0)
@@ -50,22 +23,6 @@ def f1(y_true, y_pred):
     f1 = 2*p*r / (p+r+K.epsilon())
     f1 = tf.where(tf.is_nan(f1), tf.zeros_like(f1), f1)
     return K.mean(f1)
-
-
-def getTestDataset():
-    DIR = './'
-    path_to_test = DIR + 'test/'
-    data = pd.read_csv(DIR + 'sample_submission.csv')
-
-    paths = []
-    labels = []
-
-    for name in data['Id']:
-        y = np.ones(28)
-        paths.append(os.path.join(path_to_test, name))
-        labels.append(y)
-
-    return np.array(paths), np.array(labels)
 
 
 if __name__ == '__main__':

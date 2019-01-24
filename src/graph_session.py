@@ -6,38 +6,35 @@ if __name__ == '__main__':
 
     model_of_interest = "7-4-58/"
 
-    print("graph eggs is running")
-
     with open(root + "models/" + model_of_interest + "training_session.csv", 'r', newline='') as f:
         rows = csv.reader(f, delimiter=';')
 
         for row in rows:
             x = [i + 1 for i in range(len(row[1:]))]
-            first_e = 0
-            x = x[first_e:]
+            first_epoch = 0
+            x = x[first_epoch:]
             if row[0] == "loss":
                 # plt.plot(x, [float(i) / float(row[1]) for i in row[1:]], 'r')
                 new_row = [round(float(i), 2) for i in row[1:]]
-                new_row = new_row[first_e:]
+                new_row = new_row[first_epoch:]
                 plt.plot(x, new_row, 'r')
             elif row[0] == "val_loss":
                 # plt.plot(x, [float(i) / float(row[1]) for i in row[1:]], 'b')
                 new_row = [round(float(i), 2) for i in row[1:]]
-                new_row = new_row[first_e:]
+                new_row = new_row[first_epoch:]
                 plt.plot(x, new_row, 'b')
             elif row[0] == "val_f1":
                 new_row = [round(float(i), 2) for i in row[1:]]
-                new_row = new_row[first_e:]
+                new_row = new_row[first_epoch:]
                 plt.plot(x, new_row, 'g')
             elif row[0] == "val_acc":
                 new_row = [round(float(i), 2) for i in row[1:]]
-                new_row = new_row[first_e:]
+                new_row = new_row[first_epoch:]
                 plt.plot(x, new_row, 'y')
             elif row[0] == "acc":
                 new_row = [round(float(i), 2) for i in row[1:]]
-                new_row = new_row[first_e:]
+                new_row = new_row[first_epoch:]
                 plt.plot(x, new_row, 'k')
-
             # elif row[0] == "pred_1":
             #     plt.plot(x, [float(i) for i in row[1:]], 'y')
             # elif row[0] == "act_1":
@@ -48,7 +45,6 @@ if __name__ == '__main__':
                 training_header = row[1:]
             elif row[0] == "parameter_values":
                 training_values = row[1:]
-
             # elif row[0] == "testing_values":
             #     testing_values = row[1:]
             # elif row[0] == "notes":

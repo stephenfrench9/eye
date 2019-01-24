@@ -1,22 +1,16 @@
 # 3rd party packages
 import csv
-from keras.engine.saving import load_model
-from keras.utils import plot_model
 import matplotlib.pyplot as plt
 import numpy as np
 
+from keras.engine.saving import load_model
 
 # local packages
 import train
 
-
 if __name__ == "__main__":
     root = "./"
-    # model_of_interest = "10-1-53/"
-    # model_of_interest = "10-1-58/"
     model_of_interest = "7-3-59/"
-
-    print("histo")
 
     f = open(root + "models/" + model_of_interest + "training_session.csv", 'r', newline='')
     rows = csv.reader(f, delimiter=';')
@@ -32,17 +26,14 @@ if __name__ == "__main__":
 
     reg_string = "{0}={1}".format(training_header[-1], training_values[-1])
 
+    # get the model
     # model = train.standard_load_model(model_of_interest)
-
-    # I want to see the weights list for each layer
-
     model = load_model(
         root + 'models/' + model_of_interest + 'InceptionResNetV2.model',
         custom_objects={'f1': train.f1})
 
+    # grab weights layer by layer
     weights = model.get_weights()
-    print(model.summary())
-
     x = np.ones((1,))
     for layer in model.layers:
         ws = layer.get_weights()
@@ -50,7 +41,6 @@ if __name__ == "__main__":
         if ws is None:
             print("skip " + layer.name)
         else:
-
             print("keep " + layer.name)
             for lw in ws:
                 print("lw shape: " + str(lw.shape))
@@ -60,19 +50,16 @@ if __name__ == "__main__":
                 x = np.append(x, lw, axis=0)
     x = x[1:]
 
+    # plot those weights
     max = np.round(np.max(x), 2)
     min = np.round(np.min(x), 2)
     num = x.shape[0]
-    print("b")
+
     plt.figure(1)
     plt.hist(x)
     plt.title("weights distribution (" + str(num) + " weights)" + " " + reg_string)
     plt.xlabel("min=" + str(min) + ", max=" + str(max))
-    # plt.ylim([0, 200])
     plt.savefig(root + "models/" + model_of_interest + "weight_distribution_0.png")
-
-    # plot_model(model, to_file=root + "models/" + model_of_interest + "model_arch.png")
-    print("c")
 
     plt.figure(2)
     plt.hist(x)
@@ -81,17 +68,12 @@ if __name__ == "__main__":
     plt.ylim([0, 200])
     plt.savefig(root + "models/" + model_of_interest + "weight_distribution_1.png")
 
-    # plot_model(model, to_file=root + "models/" + model_of_interest + "model_arch.png")
-    print("d")
-
     plt.figure(3)
     plt.hist(x, bins=[-1, -.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5])
     plt.title("weights distribution (" + str(num) + " weights)" + " " + reg_string)
     plt.xlabel("min=" + str(min) + ", max=" + str(max))
     plt.ylim([0, 200])
     plt.savefig(root + "models/" + model_of_interest + "weight_distribution_2.png")
-
-    # plot_model(model, to_file=root + "models/" + model_of_interest + "model_arch.png")
 
     plt.figure(4)
     plt.hist(x, bins=[-1, -.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5])
@@ -100,6 +82,7 @@ if __name__ == "__main__":
     # plt.ylim([0, 200])
     plt.savefig(root + "models/" + model_of_interest + "weight_distribution_3.png")
 
+    # Now get just the weights in the layers I appended to the InceptionNet
     x = np.ones((1,))
     for layer in model.layers[3:]:
         ws = layer.get_weights()
@@ -117,26 +100,16 @@ if __name__ == "__main__":
                 x = np.append(x, lw, axis=0)
     x = x[1:]
 
-    # x = np.ones((1,))
-    # for w in weights[3:]:
-    #     # print(w.shape)
-    #     w = w.flatten()
-    #     x = np.append(x, w, axis=0)
-    # x = x[1:]
-    print("a")
+    # Plot these weights
     max = np.round(np.max(x), 2)
     min = np.round(np.min(x), 2)
     num = x.shape[0]
-    print("b")
+
     plt.figure(5)
     plt.hist(x)
     plt.title("weights distribution (" + str(num) + " weights)" + " " + reg_string)
     plt.xlabel("min=" + str(min) + ", max=" + str(max))
-    # plt.ylim([0, 200])
     plt.savefig(root + "models/" + model_of_interest + "suffix_weight_distribution_0.png")
-
-    # plot_model(model, to_file=root + "models/" + model_of_interest + "model_arch.png")
-    print("c")
 
     plt.figure(6)
     plt.hist(x)
@@ -145,9 +118,6 @@ if __name__ == "__main__":
     plt.ylim([0, 200])
     plt.savefig(root + "models/" + model_of_interest + "suffix_weight_distribution_1.png")
 
-    # plot_model(model, to_file=root + "models/" + model_of_interest + "model_arch.png")
-    print("d")
-
     plt.figure(7)
     plt.hist(x, bins=[-1, -.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5])
     plt.title("weights distribution (" + str(num) + " weights)" + " " + reg_string)
@@ -155,15 +125,10 @@ if __name__ == "__main__":
     plt.ylim([0, 200])
     plt.savefig(root + "models/" + model_of_interest + "suffix_weight_distribution_2.png")
 
-    # plot_model(model, to_file=root + "models/" + model_of_interest + "model_arch.png")
-
     plt.figure(8)
     plt.hist(x, bins=[-1, -.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5])
     plt.title("weights distribution (" + str(num) + " weights)" + " " + reg_string)
     plt.xlabel("min=" + str(min) + ", max=" + str(max))
-    # plt.ylim([0, 200])
     plt.savefig(root + "models/" + model_of_interest + "suffix_weight_distribution_3.png")
-
-
 
     f.close()

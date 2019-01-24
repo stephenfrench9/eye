@@ -27,5 +27,3 @@ if __name__ == '__main__':
                            shape=(299, 299, 3),
                            classes=classes,
                            thresholds=T_all)
-
-    # get data and a model

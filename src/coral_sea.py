@@ -1,8 +1,8 @@
 import cv2
 import keras
-from PIL import Image
 import numpy as np
 
+from PIL import Image
 
 class data_gen(keras.utils.Sequence):
     def __init__(self, paths, shape, bs, cache=True):

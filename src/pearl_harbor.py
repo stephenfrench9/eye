@@ -1,8 +1,12 @@
-import train
+# 3rd party packages
 import time
-
 import keras
+
 from keras.callbacks import ModelCheckpoint
+
+# local packages
+import all_models
+import train
 
 
 class TimeHistory(keras.callbacks.Callback):
@@ -17,13 +21,17 @@ class TimeHistory(keras.callbacks.Callback):
 
 
 def main():
-    print("welcome to the pearl harbor")
+    """
+    Train a model, with all images loaded to RAM before training begins.
+    Note that you explicitly state which classes your model will predict.
+    """
+
     num_images = 31070
     # archive destination
     destination = train.get_new_destination()
 
     # get model and data
-    model, shape, n_out, model_name = train.model16()
+    model, shape, n_out, model_name = all_models.model16()
     classes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     tg, vg = train.get_generators(shape, num_images, classes=classes, validation_fraction=0)
     x, y = next(tg)
@@ -66,6 +74,7 @@ def main():
     # make predictions
     original = "original_submission_ph.csv"
     train.make_predictions(destination, original, model, shape, thresholds=T_first)
+
 
 if __name__ == '__main__':
     main()

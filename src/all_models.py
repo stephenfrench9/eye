@@ -1,43 +1,15 @@
 import train
-
-import math
-
-import pearl_harbor
-
-import csv
-import datetime
-
-import cv2
-import keras
-import keras.backend as k
-import tensorflow as tf
-import os
-import numpy as np
-import pandas as pd
 import warnings
 
-from PIL import Image
-from imgaug import augmenters as iaa
-from keras.callbacks import ModelCheckpoint
-from sklearn.model_selection import train_test_split
-
-from classification_models import ResNet18, ResNet34
-from keras import backend as K
-from keras.activations import relu, sigmoid
-from keras.regularizers import l2
+from classification_models import ResNet18
 from keras.applications import InceptionResNetV2, InceptionV3
 from keras.layers import Dense, Dropout, Flatten, AveragePooling2D, Input, ReLU, Concatenate, Activation
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras.models import Sequential, model_from_json, Model
+from keras.models import Sequential, Model
 from keras.optimizers import SGD, Adam
-from keras.utils import Sequence
-from scipy.misc import imread
-from skimage.io import imread
-from tqdm import tqdm
+from keras.regularizers import l2
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-root = "./"
 
 
 def model0(lrp, mp):

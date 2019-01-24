@@ -3,8 +3,6 @@ import train
 import csv
 import numpy as np
 
-root = "./"
-
 
 def write_performance_single(model, cm, precision, recall, notes):
     """
@@ -15,6 +13,7 @@ def write_performance_single(model, cm, precision, recall, notes):
     :param recall: recall for this model on this single class prediction problem
     :param precision:
     """
+    root = "./"
     destination = root + "models/" + model
     with open(destination + "performance.csv", "w") as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=';',
@@ -38,6 +37,7 @@ def write_performance_multi(model, precisions, recalls, notes):
     :param recalls: an array of recalls for each prediction class
     :param notes: typically the test data
     """
+    root = "./"
     destination = root + "models/" + model
     with open(destination + "performance.csv", "a") as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=';',
@@ -52,11 +52,15 @@ def write_performance_multi(model, precisions, recalls, notes):
         csv_writer.writerow(notes)
 
 
-if __name__ == '__main__':
+def main():
+    """
+    DEPRACATED (only one class)
+    Load and validate a model. Generate and save precision and recall scores.
+    :return:
+    """
     train_labels = train.get_data()
     modelOfInterest = "17-7-25/"
     model = train.standard_load_model(modelOfInterest)
-
     # load test data
     batch_size = 30
     valid_l = 28000
@@ -71,7 +75,6 @@ if __name__ == '__main__':
     # initialize confusion matrix
     membership = 0  # column of predicted and actual results to examine
     a0 = np.zeros((2, 2))
-
     # build confusion matrix
     num_batches = test_generator.__len__()
     for batch in range(num_batches):
@@ -85,15 +88,17 @@ if __name__ == '__main__':
             prediction = int(y_pred[i][membership])  # real nice ... look at a diff column when
             actual = int(y_act[i][membership])  # building the confusion matrix
             a0[prediction][actual] += 1
-
     # calculate performance metrics
     class0 = a0[0][1] + a0[1][1]
     recall = a0[1][1] / class0
     exclaim = a0[1][0] + a0[1][1]
     precision = a0[1][1] / exclaim
-
     # save the results
     notes = ["file: train.csv", "range: " + str(valid_l) + ":" + str(valid_h), "batch size: " + str(batch_size)]
     precision = ["precision: ", str(precision)]
     recall = ["recall: ", str(recall)]
     write_performance_single(modelOfInterest, a0, precision, recall, notes)
+
+
+if __name__ == '__main__':
+    main()
